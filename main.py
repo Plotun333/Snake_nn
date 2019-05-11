@@ -1,0 +1,3 @@
+import snake
+
+snake.main()
