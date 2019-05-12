@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import math
 
 FPS = 12
 delay = 50
@@ -13,6 +14,7 @@ class Game(object):
         self.Score = 0
         self.display = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.clock = pygame.time.Clock()
+        self.DEATH = False
 
 
 class Snake(Game):
@@ -25,7 +27,7 @@ class Snake(Game):
         self.color = (0, 255, 0)
         self.speed = 10
         self.body = [[self.x, self.y]]
-        self.dir = 'left'
+        self.dir = 'none '
 
     def draw(self):
         index = 0
@@ -78,6 +80,9 @@ class Snake(Game):
                 elif keys[pygame.K_DOWN] and self.dir != 'up':
 
                     self.dir = 'down'
+                elif keys[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
 
     def eat(self, x, y):
         if x == self.body[0][0] and y == self.body[0][1]:
@@ -104,10 +109,35 @@ class Snake(Game):
             if index != 0:
                 if x == element[0] and y == element[1]:
                     return True
-            if x < 0 or x > 600 or y > 600 or y < 0:
+            if x < 0 or x >= 600 or y >= 600 or y < 0:
                 return True
             index += 1
         return False
+
+    def food_angle(self, x, y):
+        del_x = self.body[0][0] - x
+        del_y = self.body[0][1] - y
+        degree = math.degrees(math.atan2(del_x, del_y))
+        if 0 > degree:
+            return (360 + degree) / 360
+        else:
+            return degree / 360
+
+    def wall_dist_left(self):
+
+        return (self.body[0][0] + 10)/610
+
+    def wall_dist_right(self):
+
+        return (self.screen_height - self.body[0][0])/600
+
+    def wall_dist_up(self):
+
+        return (self.body[0][1] + 10)/610
+
+    def wall_dist_down(self):
+
+        return (self.screen_height - self.body[0][1])/600
 
 
 class Food(Game):
@@ -123,34 +153,38 @@ class Food(Game):
         pygame.draw.rect(self.display, self.color, (self.x, self.y, self.width, self.height))
 
 
-def main():
+def main(show=True):
     pygame.init()
     white = (255, 255, 255)
-    green = (0, 255, 0)
     game = Game()
+
     pygame.display.set_caption("snake")
     snake = Snake()
-    food = Food(random.randint(1, 59) * 10, random.randint(1, 59) * 10)
+    food = Food(random.randint(1, 59) * snake.speed, random.randint(1, 59) * snake.speed)
     pygame.font.init()  # you have to call this at the start,
     # if you want to use this module.
     my_font = pygame.font.SysFont('Comic Sans MS', 15)
+    if not show:
+        pygame.display.iconify()
 
     while True:
 
         text_surface = my_font.render('Score:  ' + str(game.Score), False, (255, 0, 0))
-        if snake.eat(food.x, food.y):
-            game.Score += 1
-            food = Food(random.randint(1, 59) * 10, random.randint(1, 59) * 10)
+        game.display.fill(white)
         pygame.time.delay(delay)
         game.clock.tick(FPS)
-        game.display.fill(white)
         game.display.blit(text_surface, (10, 10))
         snake.draw()
         food.draw()
         snake.move()
-        if snake.hit():
-            print("you lost")
-            # x, y = snake.body[0]
-            # snake.body = [[x, y]]
+        if snake.eat(food.x, food.y):
+            game.Score += 1
+            food = Food(random.randint(1, 59) * snake.speed, random.randint(1, 59) * snake.speed)
+            game.display.fill(white)
 
+        if snake.hit():
+            snake.body = [[300, 300]]
+            game.Score = 0
+            game.DEATH = True
+            snake.dir = 'none'
         pygame.display.update()
