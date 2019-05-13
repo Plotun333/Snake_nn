@@ -1,13 +1,28 @@
+# imports
+
 import pygame
+import pygameMenu
 import sys
+import os
 import random
 import math
 
+from pygameMenu.locals import *
+
+# show display in the middle of the screen
+os.environ['SDL_VIDEO_CENTERED'] = '1'
+
+# frame rate + delay after every frame
 FPS = 12
 delay = 50
 
 
 class GameInfo(object):
+    """
+    Game info is a class with all of the global information about the game
+    like the display the Score...
+    """
+
     def __init__(self):
         self.screen_width = 600
         self.screen_height = 600
@@ -18,18 +33,21 @@ class GameInfo(object):
 
 
 class Snake(GameInfo):
-    def __init__(self):
+    def __init__(self, x=300, y=300):
         super().__init__()
-        self.x = int(300)
-        self.y = int(300)
+        # default x,y
+        self.x = int(x)
+        self.y = int(y)
         self.body_width = 10
         self.body_height = 10
         self.color = (0, 255, 0)
         self.speed = 10
         self.body = [[self.x, self.y]]
         self.dir = 'left'
+        self.pause = False
 
     def draw(self):
+        # moving the body + drawing it
         index = 0
         moveto = []
         for element in self.body:
@@ -56,7 +74,7 @@ class Snake(GameInfo):
 
             index += 1
 
-    def move(self):
+    def move(self, menu):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -80,9 +98,9 @@ class Snake(GameInfo):
                 elif keys[pygame.K_DOWN] and self.dir != 'up':
 
                     self.dir = 'down'
+
                 elif keys[pygame.K_ESCAPE]:
-                    pygame.quit()
-                    sys.exit()
+                    menu.enable()
 
     def eat(self, x, y):
         if x == self.body[0][0] and y == self.body[0][1]:
@@ -91,7 +109,7 @@ class Snake(GameInfo):
                 self.body.append([x + self.speed, y])
             elif self.dir == 'right':
                 x, y = self.body[len(self.body) - 1]
-                self.body.append([x + self.speed, y])
+                self.body.append([x - self.speed, y])
             elif self.dir == 'up':
                 x, y = self.body[len(self.body) - 1]
                 self.body.append([x, y + self.speed])
@@ -113,6 +131,8 @@ class Snake(GameInfo):
                 return True
             index += 1
         return False
+
+    # Input for AI
 
     def food_angle(self, x, y):
         del_x = self.body[0][0] - x
@@ -154,14 +174,56 @@ class Food(GameInfo):
 
 
 class Game(object):
+    """
+    The main game class
+    """
     def __init__(self):
         self.game = GameInfo()
         self.snake = Snake()
         self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
 
+    def main_menu_background(self):
+        """
+        Background color of the main menu, on this function user can plot
+        images, play sounds, etc.
+        """
+        self.game.display.fill((40, 0, 40))
+
     def game_loop(self, show=True):
         pygame.init()
         white = (255, 255, 255)
+
+        # -----------------------------------------------------------------------------
+        # Main menu, pauses execution of the application
+
+        def main_menu_background():
+            """
+            Background color of the main menu, on this function user can plot
+            images, play sounds, etc.
+            """
+            game.game.display.fill((216, 216, 216))
+
+        def train_ai():
+            pass
+
+        menu = pygameMenu.Menu(self.game.display,
+                               bgfun=main_menu_background,
+                               enabled=False,
+                               font=pygameMenu.fonts.FONT_NEVIS,
+                               menu_alpha=90,
+                               onclose=PYGAME_MENU_CLOSE,
+                               title='Main Menu',
+                               title_offsety=5,
+                               window_height=int(self.game.screen_height),
+                               window_width=int(self.game.screen_width)
+                               )
+
+        menu.add_option("New Game", train_ai)
+        menu.add_option("Train AI", train_ai)
+        menu.add_option("Player vs AI", train_ai)
+        menu.add_option('Exit', PYGAME_MENU_EXIT)
+
+        # -----------------------------------------------------------------------------
 
         pygame.display.set_caption("snake")
 
@@ -172,6 +234,7 @@ class Game(object):
             pygame.display.iconify()
 
         while True:
+            events = pygame.event.get()
 
             text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
             self.game.display.fill(white)
@@ -180,7 +243,7 @@ class Game(object):
             self.game.display.blit(text_surface, (10, 10))
             self.snake.draw()
             self.food.draw()
-            self.snake.move()
+            self.snake.move(menu)
             if self.snake.eat(self.food.x, self.food.y):
                 self.game.Score += 1
                 self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
@@ -191,8 +254,10 @@ class Game(object):
                 self.game.Score = 0
                 self.game.DEATH = True
                 self.snake.dir = 'left'
-            pygame.display.update()
+            menu.mainloop(events)
+            pygame.display.flip()
 
 
 game = Game()
+
 game.game_loop()
