@@ -7,7 +7,7 @@ FPS = 12
 delay = 50
 
 
-class Game(object):
+class GameInfo(object):
     def __init__(self):
         self.screen_width = 600
         self.screen_height = 600
@@ -17,7 +17,7 @@ class Game(object):
         self.DEATH = False
 
 
-class Snake(Game):
+class Snake(GameInfo):
     def __init__(self):
         super().__init__()
         self.x = int(300)
@@ -27,7 +27,7 @@ class Snake(Game):
         self.color = (0, 255, 0)
         self.speed = 10
         self.body = [[self.x, self.y]]
-        self.dir = 'none '
+        self.dir = 'left'
 
     def draw(self):
         index = 0
@@ -140,7 +140,7 @@ class Snake(Game):
         return (self.screen_height - self.body[0][1])/600
 
 
-class Food(Game):
+class Food(GameInfo):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -153,38 +153,46 @@ class Food(Game):
         pygame.draw.rect(self.display, self.color, (self.x, self.y, self.width, self.height))
 
 
-def main(show=True):
-    pygame.init()
-    white = (255, 255, 255)
-    game = Game()
+class Game(object):
+    def __init__(self):
+        self.game = GameInfo()
+        self.snake = Snake()
+        self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
 
-    pygame.display.set_caption("snake")
-    snake = Snake()
-    food = Food(random.randint(1, 59) * snake.speed, random.randint(1, 59) * snake.speed)
-    pygame.font.init()  # you have to call this at the start,
-    # if you want to use this module.
-    my_font = pygame.font.SysFont('Comic Sans MS', 15)
-    if not show:
-        pygame.display.iconify()
+    def game_loop(self, show=True):
+        pygame.init()
+        white = (255, 255, 255)
 
-    while True:
+        pygame.display.set_caption("snake")
 
-        text_surface = my_font.render('Score:  ' + str(game.Score), False, (255, 0, 0))
-        game.display.fill(white)
-        pygame.time.delay(delay)
-        game.clock.tick(FPS)
-        game.display.blit(text_surface, (10, 10))
-        snake.draw()
-        food.draw()
-        snake.move()
-        if snake.eat(food.x, food.y):
-            game.Score += 1
-            food = Food(random.randint(1, 59) * snake.speed, random.randint(1, 59) * snake.speed)
-            game.display.fill(white)
+        pygame.font.init()  # you have to call this at the start,
+        # if you want to use this module.
+        my_font = pygame.font.SysFont('Comic Sans MS', 15)
+        if not show:
+            pygame.display.iconify()
 
-        if snake.hit():
-            snake.body = [[300, 300]]
-            game.Score = 0
-            game.DEATH = True
-            snake.dir = 'none'
-        pygame.display.update()
+        while True:
+
+            text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
+            self.game.display.fill(white)
+            pygame.time.delay(delay)
+            self.game.clock.tick(FPS)
+            self.game.display.blit(text_surface, (10, 10))
+            self.snake.draw()
+            self.food.draw()
+            self.snake.move()
+            if self.snake.eat(self.food.x, self.food.y):
+                self.game.Score += 1
+                self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+                self.game.display.fill(white)
+
+            if self.snake.hit():
+                self.snake.body = [[300, 300]]
+                self.game.Score = 0
+                self.game.DEATH = True
+                self.snake.dir = 'left'
+            pygame.display.update()
+
+
+game = Game()
+game.game_loop()
