@@ -6,8 +6,86 @@ import sys
 import os
 import random
 import math
+import tflearn
+
 
 from pygameMenu.locals import *
+
+
+class NeuralNetwork(object):
+    def __init__(self, game, initial_games=1, test_games=100, lr=1e-2, filename='snake_nn.tflearn'):
+        self.initial_games = initial_games
+        self.test_games = test_games
+        self.lr = lr
+        self.filename = filename
+        self.training_data = []
+        self.game = game
+
+    def initial_population(self, snake):
+
+        prev_observation = self.generate_observation(snake)
+
+        action, game_action = self.generate_action(snake.dir)
+        snake.dir = game_action
+        print(action)
+        done = snake.hit()
+        if done:
+            self.training_data.append([(prev_observation, action), 0])
+            print(self.training_data)
+            exit()
+
+        else:
+            self.training_data.append([(prev_observation, action), 1])
+            prev_observation = self.generate_observation(snake)
+
+    def generate_observation(self, snake):
+        fruit_angle = snake.food_angle(game.food.x, game.food.y)
+        top_wall = snake.wall_dist_up()
+        bottom_wall = snake.wall_dist_down()
+        left_wall = snake.wall_dist_left()
+        right_wall = game.snake.wall_dist_right()
+
+        return [fruit_angle, top_wall, bottom_wall, right_wall, left_wall]
+
+    def generate_action(self, dir):
+        action = random.randint(0, 2) - 1
+        dir_next = "none"
+        if dir == "up":
+            if action == -1:
+                dir_next = "left"
+            elif action == 1:
+                dir_next = "right"
+            elif action == 0:
+                dir_next = "up"
+
+        elif dir == "down":
+            if action == -1:
+                dir_next = "right"
+            elif action == 1:
+                dir_next = "left"
+            elif action == 0:
+                dir_next = "down"
+
+        elif dir == "right":
+            if action == -1:
+                dir_next = "up"
+            elif action == 1:
+                dir_next = "down"
+            elif action == 0:
+                dir_next = "right"
+
+        elif dir == "left":
+            if action == -1:
+                dir_next = "down"
+            elif action == 1:
+                dir_next = "up"
+            elif action == 0:
+                dir_next = "left"
+
+
+
+        return action, dir_next
+
 
 # show display in the middle of the screen
 os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -182,17 +260,14 @@ class Game(object):
         self.snake = Snake()
         self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
 
-    def main_menu_background(self):
-        """
-        Background color of the main menu, on this function user can plot
-        images, play sounds, etc.
-        """
-        self.game.display.fill((40, 0, 40))
-
-    def game_loop(self, show=True):
+    def game_loop(self, show=True, neural_network=None):
         pygame.init()
         white = (255, 255, 255)
 
+        if neural_network is None:
+            AI = False
+        else:
+            AI = True
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
 
@@ -233,31 +308,60 @@ class Game(object):
         if not show:
             pygame.display.iconify()
 
+        all_snakes = []
+        if AI:
+            for _ in range(neural_network.initial_games):
+                all_snakes.append(Snake())
+
+
+
         while True:
-            events = pygame.event.get()
-
-            text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
-            self.game.display.fill(white)
-            pygame.time.delay(delay)
             self.game.clock.tick(FPS)
-            self.game.display.blit(text_surface, (10, 10))
-            self.snake.draw()
-            self.food.draw()
-            self.snake.move(menu)
-            if self.snake.eat(self.food.x, self.food.y):
-                self.game.Score += 1
-                self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
-                self.game.display.fill(white)
+            self.game.display.fill(white)
+            events = pygame.event.get()
+            if AI:
+                for snake in all_snakes:
+                    neural_network.initial_population(snake)
+                    snake.move(menu)
+                    snake.draw()
+                    self.food.draw()
 
-            if self.snake.hit():
-                self.snake.body = [[300, 300]]
-                self.game.Score = 0
-                self.game.DEATH = True
-                self.snake.dir = 'left'
-            menu.mainloop(events)
-            pygame.display.flip()
+                    # Exit
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+
+                        keys = pygame.key.get_pressed()
+
+                        for _ in keys:
+                            if keys[pygame.K_ESCAPE]:
+                                menu.enable()
+
+                    menu.mainloop(events)
+                    pygame.display.flip()
+            else:
+                text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
+                pygame.time.delay(delay)
+                self.game.display.blit(text_surface, (10, 10))
+                self.snake.draw()
+                self.food.draw()
+                self.snake.move(menu)
+                if self.snake.eat(self.food.x, self.food.y):
+                    self.game.Score += 1
+                    self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+                    self.game.display.fill(white)
+
+                if self.snake.hit():
+                    self.snake.body = [[300, 300]]
+                    self.game.Score = 0
+                    self.game.DEATH = True
+                    self.snake.dir = 'left'
+
+                menu.mainloop(events)
+                pygame.display.flip()
 
 
 game = Game()
-
-game.game_loop()
+net = NeuralNetwork(game)
+game.game_loop(True, net)
