@@ -19,15 +19,21 @@ class Matrix(object):
     def randomize(self):
         for row in range(self.rows):
             for col in range(self.cols):
-                self.data[row][col] = (random.randint(0, 2000)/2000)-1
+                self.data[row][col] = (random.randint(0, 2000)/1000)-1
 
     @staticmethod
     def from_array(arr):
         m = Matrix(len(arr), 1)
         for i in range(len(arr)):
             m.data[i][0] = arr[i]
-        m.print()
         return m
+
+    def to_Array(self):
+        arr = []
+        for row in range(self.rows):
+            for col in range(self.cols):
+                arr.append(self.data[row][col])
+        return arr
 
     @staticmethod
     def add(add, add2):
@@ -46,7 +52,7 @@ class Matrix(object):
     def multiply(m1, m2):
 
         if m1.cols != m2.rows:
-            print("Error matrix.cols must equal input_matrix.rows")
+            assert "Error matrix.cols must equal input_matrix.rows"
             return None
         result = Matrix(m1.rows, m2.cols)
         for row in range(result.rows):
@@ -74,7 +80,3 @@ class Matrix(object):
             for col in range(self.cols):
                 result.data[col][row] = self.data[row][col]
         return result
-
-
-m = Matrix.from_array([1, 1])
-m.print()
