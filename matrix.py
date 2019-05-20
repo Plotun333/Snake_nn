@@ -37,11 +37,17 @@ class Matrix(object):
 
     @staticmethod
     def add(add, add2):
+        if add.rows != add.rows:
+            assert "Error Subtract row do not equal"
+        if add.cols != add2.cols:
+            assert "Error Subtract columns do not equal"
 
-        for row in range(add.rows):
-            for col in range(add.cols):
-                add.data[row][col] += add2.data[row][col]
-        return add
+        result = Matrix(add.rows, add.cols)
+        for row in range(result.rows):
+            for col in range(result.cols):
+                result.data[row][col] = add.data[row][col] + add2.data[row][col]
+
+        return result
 
     def add_to(self, add):
         for row in range(self.rows):
@@ -49,11 +55,29 @@ class Matrix(object):
                 self.data[row][col] += add
 
     @staticmethod
+    def subtract(sub, sub2):
+        if sub.rows != sub2.rows:
+            assert "Error Subtract row do not equal"
+        if sub.cols != sub2.cols:
+            assert "Error Subtract columns do not equal"
+
+        result = Matrix(sub.rows, sub.cols)
+        for row in range(result.rows):
+            for col in range(result.cols):
+                 result.data[row][col] = sub.data[row][col] - sub2.data[row][col]
+
+        return result
+
+    def subtract_to(self, sub):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.data[row][col] -= sub
+
+    @staticmethod
     def multiply(m1, m2):
 
         if m1.cols != m2.rows:
             assert "Error matrix.cols must equal input_matrix.rows"
-            return None
         result = Matrix(m1.rows, m2.cols)
         for row in range(result.rows):
             for col in range(result.cols):
@@ -66,17 +90,40 @@ class Matrix(object):
     def multiply_to(self, multiply):
         for row in range(self.rows):
             for col in range(self.cols):
+
                     self.data[row][col] *= multiply
 
-    def map(self, fn):
-        for row in range(self.rows):
-            for col in range(self.cols):
-                val = self.data[row][col]
-                self.data[row][col] = fn(val)
+    @staticmethod
+    def divide(d1, d2):
 
-    def transpose(self):
-        result = Matrix(self.cols, self.rows)
+        if d1.cols != d2.rows:
+            assert "Error matrix.cols must equal input_matrix.rows"
+        result = Matrix(d1.rows, d2.cols)
+        for row in range(result.rows):
+            for col in range(result.cols):
+                s = 0
+                for k in range(d1.cols):
+                    s += d1.data[row][k] / d2.data[k][col]
+                result.data[row][col] = s
+        return result
+
+    def divide_to(self, divide):
         for row in range(self.rows):
             for col in range(self.cols):
-                result.data[col][row] = self.data[row][col]
+                    self.data[row][col] /= divide
+
+    @staticmethod
+    def map(matrix, fn):
+        for row in range(matrix.rows):
+            for col in range(matrix.cols):
+                val = matrix.data[row][col]
+                matrix.data[row][col] = fn(val)
+        return matrix
+
+    @staticmethod
+    def transpose(matrix):
+        result = Matrix(matrix.cols, matrix.rows)
+        for row in range(matrix.rows):
+            for col in range(matrix.cols):
+                result.data[col][row] = matrix.data[row][col]
         return result
