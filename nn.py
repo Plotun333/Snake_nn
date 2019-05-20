@@ -75,7 +75,7 @@ class NeuralNetwork(object):
 
         return output.to_Array()
 
-    def train(self, input_array, target_array, learning_rate=0.01):
+    def train(self, input_array, target_array, learning_rate=0.1):
 
         inputs = Matrix.from_array(input_array)
 
@@ -146,9 +146,9 @@ nn = NeuralNetwork(2, [2], 1)
 inputs = [[1, 0], [0, 1], [1, 1], [0, 0]]
 target = [[1], [1], [0], [0]]
 
-for _ in range(100000):
+for _ in range(500000):
     r = random.randint(0, 3)
-    nn.train(inputs[r], target[r])
+    nn.train(inputs[r], target[r], 0.01)
 
 
 print(nn.feed_forward(inputs[0]))
