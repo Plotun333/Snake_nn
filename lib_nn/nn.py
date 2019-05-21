@@ -178,6 +178,15 @@ class NeuralNetwork(object):
         self.hidden_weights = weights_new
         self.hidden_biases = biases_new
 
+    @staticmethod
+    def initial_population(nn_num, input_nodes, hidden_nodes, output_nodes):
+
+        population = []
+        for _ in range(nn_num):
+            nn = NeuralNetwork(input_nodes, hidden_nodes, output_nodes)
+            population.append(nn)
+        return population
+
 # XOR EXAMPLE
 # nn = NeuralNetwork(2, [2], 1)
 # inputs = [[1, 0], [0, 1], [1, 1], [0, 0]]
@@ -192,11 +201,4 @@ class NeuralNetwork(object):
 # print(nn.feed_forward(inputs[1]))
 # print(nn.feed_forward(inputs[2]))
 # print(nn.feed_forward(inputs[3]))
-n = NeuralNetwork(2, [2], 2)
-n2 = n.copy()
-for i in n.hidden_weights:
-    i.print()
-print('\n')
-n2.mutate(0)
-for i in n2.hidden_weights:
-    i.print()
+

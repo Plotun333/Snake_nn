@@ -8,6 +8,7 @@ import random
 import math
 
 from pygameMenu.locals import *
+from lib_nn.nn import NeuralNetwork
 
 # show display in the middle of the screen
 os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -45,6 +46,9 @@ class Snake(GameInfo):
         self.body = [[self.x, self.y]]
         self.dir = 'left'
         self.pause = False
+        # AI
+        self.Fitness = 0
+        self.food_dist = None
 
     def draw(self):
         # moving the body + drawing it
@@ -102,6 +106,64 @@ class Snake(GameInfo):
                 elif keys[pygame.K_ESCAPE]:
                     menu.enable()
 
+    def ai(self, nn, food, menu):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            keys = pygame.key.get_pressed()
+            keys = pygame.key.get_pressed()
+
+            for _ in keys:
+                if keys[pygame.K_ESCAPE]:
+                    menu.enable()
+
+        input = [self.wall_dist_up(),
+                 self.wall_dist_down(),
+                 self.wall_dist_right(),
+                 self.wall_dist_left(),
+                 self.food_angle(food.x, food.y)]
+
+        output = nn.feed_forward(input)
+
+        index = 0
+        current_val = -1
+        for val in output:
+            if val > current_val:
+                dir_index = index
+            current_val = val
+            index += 1
+        # neural network will give three outputs if forward or right or right
+        # foward doesn't change anything in the current game state
+
+        if dir_index == 1:
+            if self.dir == "up":
+                self.dir = "right"
+            elif self.dir == "right":
+                self.dir = "down"
+            elif self.dir == "down":
+                self.dir = "right"
+            elif self.dir == "left":
+                self.dir = "up"
+
+        elif dir_index == 2:
+            if self.dir == "up":
+                self.dir = "left"
+            elif self.dir == "right":
+                self.dir = "up"
+            elif self.dir == "down":
+                self.dir = "left"
+            elif self.dir == "left":
+                self.dir = "down"
+
+    def fitness(self, food):
+        dist = math.hypot(self.body[0][0] - food.x, self.body[0][1] - food.y)
+        if self.food_dist is not None:
+            if dist < self.food_dist:
+                self.Fitness += 0.001
+        self.food_dist = dist
+
     def eat(self, x, y):
         if x == self.body[0][0] and y == self.body[0][1]:
             if self.dir == 'left':
@@ -145,19 +207,19 @@ class Snake(GameInfo):
 
     def wall_dist_left(self):
 
-        return (self.body[0][0] + 10)/610
+        return (self.body[0][0] + 10) / 610
 
     def wall_dist_right(self):
 
-        return (self.screen_height - self.body[0][0])/600
+        return (self.screen_height - self.body[0][0]) / 600
 
     def wall_dist_up(self):
 
-        return (self.body[0][1] + 10)/610
+        return (self.body[0][1] + 10) / 610
 
     def wall_dist_down(self):
 
-        return (self.screen_height - self.body[0][1])/600
+        return (self.screen_height - self.body[0][1]) / 600
 
 
 class Food(GameInfo):
@@ -177,10 +239,24 @@ class Game(object):
     """
     The main game class
     """
-    def __init__(self):
+
+    def __init__(self, population=None):
         self.game = GameInfo()
-        self.snake = Snake()
-        self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+        if population is None:
+            self.snake = Snake()
+            self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+
+        else:
+            self.all_food = []
+            self.snake = Snake()
+            self.all_snake = []
+
+            for _ in population:
+                self.all_snake.append(Snake())
+                self.all_food.append(
+                    Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed))
+        # self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+        self.population = population
 
     def main_menu_background(self):
         """
@@ -192,6 +268,10 @@ class Game(object):
     def game_loop(self, show=True):
         pygame.init()
         white = (255, 255, 255)
+        if self.population is None:
+            AI = False
+        else:
+            AI = True
 
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
@@ -233,31 +313,110 @@ class Game(object):
         if not show:
             pygame.display.iconify()
 
+        All_fitness = []
+        next_puplation = []
+        End = False
         while True:
             events = pygame.event.get()
 
-            text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
             self.game.display.fill(white)
             pygame.time.delay(delay)
             self.game.clock.tick(FPS)
-            self.game.display.blit(text_surface, (10, 10))
-            self.snake.draw()
-            self.food.draw()
-            self.snake.move(menu)
-            if self.snake.eat(self.food.x, self.food.y):
-                self.game.Score += 1
-                self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
-                self.game.display.fill(white)
 
-            if self.snake.hit():
-                self.snake.body = [[300, 300]]
-                self.game.Score = 0
-                self.game.DEATH = True
-                self.snake.dir = 'left'
-            menu.mainloop(events)
-            pygame.display.flip()
+            if AI:
+                # UI
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    keys = pygame.key.get_pressed()
+
+                    for _ in keys:
+
+                        if keys[pygame.K_ESCAPE]:
+                            menu.enable()
+
+                remove_s = []
+                remove_f = []
+                remove_nn = []
+                index = 0
+                for nn in self.population:
+
+                    self.all_food[index].draw()
+                    self.all_snake[index].ai(nn, self.all_food[index], menu)
+                    self.all_snake[index].draw()
+                    self.all_snake[index].fitness(self.all_food[index])
+                    if self.all_snake[index].hit():
+                        self.game.DEATH = True
+                        self.all_snake[index].Fitness -= 100
+                        remove_s.append(self.all_snake[index])
+                        remove_f.append(self.all_food[index])
+                        remove_nn.append(nn)
+
+                    if self.all_snake[index].eat(self.all_food[index].x, self.all_food[index].y):
+                        self.game.Score += 1
+                        self.all_food[index] = Food(random.randint(1, 59) * self.snake.speed,
+                                                    random.randint(1, 59) * self.snake.speed)
+                        self.game.display.fill(white)
+                        self.all_snake[index].Fitness += 50
+
+                    index += 1
+                for r in remove_s:
+                    print(r.Fitness)
+                    All_fitness.append(r.Fitness)
+                    self.all_snake.remove(r)
+                for r in remove_f:
+                    self.all_food.remove(r)
+                for r in remove_nn:
+                    next_puplation.append(r)
+                    self.population.remove(r)
+                menu.mainloop(events)
+                pygame.display.flip()
+
+                # showing the best player and mixing gen poll
+                if len(self.all_snake) == 0:
+
+                    # sorting from biggest to smallest
+                    All_fitness_sorted = []
+                    next_puplation_sorted = []
+                    while All_fitness:
+                        # find index of maximum item
+                        max_index = All_fitness.index(max(All_fitness))
+
+                        # remove item with pop() and append to sorted list
+                        next_puplation_sorted.append(next_puplation[max_index])
+                        next_puplation.remove(next_puplation[max_index])
+                        All_fitness_sorted.append(All_fitness[max_index])
+                        All_fitness.remove(All_fitness[max_index])
+
+                    # breading the best and kill
+
+                    return next_puplation_sorted
+
+            else:
+                text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
+                self.game.display.blit(text_surface, (10, 10))
+                self.food.draw()
+                self.snake.move(menu)
+                self.snake.draw()
+
+                if self.snake.eat(self.food.x, self.food.y):
+                    self.game.Score += 1
+                    self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+                    self.game.display.fill(white)
+
+                if self.snake.hit():
+                    return None
+
+                menu.mainloop(events)
+                pygame.display.flip()
 
 
-game = Game()
+# initial population
 
-game.game_loop()
+population = NeuralNetwork.initial_population(10, 5, [5], 3)
+while True:
+    game = Game()
+
+    population = game.game_loop()
