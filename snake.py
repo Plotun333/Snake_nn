@@ -6,8 +6,6 @@ import sys
 import os
 import random
 import math
-import tflearn
-
 
 from pygameMenu.locals import *
 
@@ -184,14 +182,17 @@ class Game(object):
         self.snake = Snake()
         self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
 
-    def game_loop(self, show=True, neural_network=None):
+    def main_menu_background(self):
+        """
+        Background color of the main menu, on this function user can plot
+        images, play sounds, etc.
+        """
+        self.game.display.fill((40, 0, 40))
+
+    def game_loop(self, show=True):
         pygame.init()
         white = (255, 255, 255)
 
-        if neural_network is None:
-            AI = False
-        else:
-            AI = True
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
 
@@ -232,59 +233,31 @@ class Game(object):
         if not show:
             pygame.display.iconify()
 
-        all_snakes = []
-        if AI:
-            for _ in range(neural_network.initial_games):
-                all_snakes.append(Snake())
-
-
-
         while True:
-            self.game.clock.tick(FPS)
-            self.game.display.fill(white)
             events = pygame.event.get()
-            if AI:
-                for snake in all_snakes:
-                    neural_network.initial_population(snake)
-                    snake.move(menu)
-                    snake.draw()
-                    self.food.draw()
 
-                    # Exit
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            pygame.quit()
-                            sys.exit()
+            text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
+            self.game.display.fill(white)
+            pygame.time.delay(delay)
+            self.game.clock.tick(FPS)
+            self.game.display.blit(text_surface, (10, 10))
+            self.snake.draw()
+            self.food.draw()
+            self.snake.move(menu)
+            if self.snake.eat(self.food.x, self.food.y):
+                self.game.Score += 1
+                self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
+                self.game.display.fill(white)
 
-                        keys = pygame.key.get_pressed()
-
-                        for _ in keys:
-                            if keys[pygame.K_ESCAPE]:
-                                menu.enable()
-
-                    menu.mainloop(events)
-                    pygame.display.flip()
-            else:
-                text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
-                pygame.time.delay(delay)
-                self.game.display.blit(text_surface, (10, 10))
-                self.snake.draw()
-                self.food.draw()
-                self.snake.move(menu)
-                if self.snake.eat(self.food.x, self.food.y):
-                    self.game.Score += 1
-                    self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
-                    self.game.display.fill(white)
-
-                if self.snake.hit():
-                    self.snake.body = [[300, 300]]
-                    self.game.Score = 0
-                    self.game.DEATH = True
-                    self.snake.dir = 'left'
-
-                menu.mainloop(events)
-                pygame.display.flip()
+            if self.snake.hit():
+                self.snake.body = [[300, 300]]
+                self.game.Score = 0
+                self.game.DEATH = True
+                self.snake.dir = 'left'
+            menu.mainloop(events)
+            pygame.display.flip()
 
 
 game = Game()
 
+game.game_loop()
