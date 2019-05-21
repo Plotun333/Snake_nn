@@ -11,82 +11,6 @@ import tflearn
 
 from pygameMenu.locals import *
 
-
-class NeuralNetwork(object):
-    def __init__(self, game, initial_games=1, test_games=100, lr=1e-2, filename='snake_nn.tflearn'):
-        self.initial_games = initial_games
-        self.test_games = test_games
-        self.lr = lr
-        self.filename = filename
-        self.training_data = []
-        self.game = game
-
-    def initial_population(self, snake):
-
-        prev_observation = self.generate_observation(snake)
-
-        action, game_action = self.generate_action(snake.dir)
-        snake.dir = game_action
-        print(action)
-        done = snake.hit()
-        if done:
-            self.training_data.append([(prev_observation, action), 0])
-            print(self.training_data)
-            exit()
-
-        else:
-            self.training_data.append([(prev_observation, action), 1])
-            prev_observation = self.generate_observation(snake)
-
-    def generate_observation(self, snake):
-        fruit_angle = snake.food_angle(game.food.x, game.food.y)
-        top_wall = snake.wall_dist_up()
-        bottom_wall = snake.wall_dist_down()
-        left_wall = snake.wall_dist_left()
-        right_wall = game.snake.wall_dist_right()
-
-        return [fruit_angle, top_wall, bottom_wall, right_wall, left_wall]
-
-    def generate_action(self, dir):
-        action = random.randint(0, 2) - 1
-        dir_next = "none"
-        if dir == "up":
-            if action == -1:
-                dir_next = "left"
-            elif action == 1:
-                dir_next = "right"
-            elif action == 0:
-                dir_next = "up"
-
-        elif dir == "down":
-            if action == -1:
-                dir_next = "right"
-            elif action == 1:
-                dir_next = "left"
-            elif action == 0:
-                dir_next = "down"
-
-        elif dir == "right":
-            if action == -1:
-                dir_next = "up"
-            elif action == 1:
-                dir_next = "down"
-            elif action == 0:
-                dir_next = "right"
-
-        elif dir == "left":
-            if action == -1:
-                dir_next = "down"
-            elif action == 1:
-                dir_next = "up"
-            elif action == 0:
-                dir_next = "left"
-
-
-
-        return action, dir_next
-
-
 # show display in the middle of the screen
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
@@ -363,5 +287,4 @@ class Game(object):
 
 
 game = Game()
-net = NeuralNetwork(game)
-game.game_loop(True, net)
+

@@ -127,3 +127,11 @@ class Matrix(object):
             for col in range(matrix.cols):
                 result.data[col][row] = matrix.data[row][col]
         return result
+
+    def copy(self):
+        m = Matrix(self.rows, self.cols)
+        for row in range(self.rows):
+            for col in range(self.cols):
+                m.data[row][col] = self.data[row][col]
+        return m
+
