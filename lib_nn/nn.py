@@ -161,10 +161,11 @@ class NeuralNetwork(object):
 
     def mutate(self, rate):
         def mutate(val):
-            if (random.randint(0, 100)/100) < rate:
-                return (random.randint(0, 2000)/1000)-1
+            if (random.randint(0, 100) / 100) < rate:
+                return (random.randint(0, 2000) / 1000) - 1
             else:
                 return val
+
         weights_new = []
         biases_new = []
         for weight in self.hidden_weights:
@@ -187,6 +188,67 @@ class NeuralNetwork(object):
             population.append(nn)
         return population
 
+    @staticmethod
+    def cross(all_nn, request_num):
+        create = request_num - len(all_nn)
+        add = []
+        all_percent = []
+        current_percent = 100
+        one_percent = 100 / len(all_nn)
+        for _ in all_nn:
+            all_percent.append(current_percent / 100)
+            current_percent -= one_percent
+
+        index = 0
+        for _ in range(create):
+            #print("here")
+            while True:
+                index_r = random.randint(0, len(all_nn) - 1)
+                index_r2 = random.randint(0, len(all_nn) - 1)
+                if index_r != index_r2:
+                    r = random.randint(0, 10000) / 10000
+                    r2 = random.randint(0, 100000) / 10000
+                    if all_percent[index_r] > r and all_percent[index_r2] > r2:
+                        break
+
+            new = all_nn[index_r]
+            new2 = all_nn[index_r2]
+
+            index_w = 0
+            for matrix in new2.hidden_weights:
+                index_w2 = 0
+                for row in matrix.data:
+                    index_w3 = 0
+                    for element in row:
+                        choice = random.randint(0, 1)
+
+                        if choice == 0:
+                            new.hidden_weights[index_w].data[index_w2][index_w3] = element
+
+                        index_w3 += 1
+                    index_w2 += 1
+                index_w += 1
+
+            index_w = 0
+            for matrix in new2.hidden_biases:
+                index_w2 = 0
+                for row in matrix.data:
+
+                    choice = random.randint(0, 1)
+                    if choice == 0:
+                        new.hidden_biases[index_w].data[index_w2] = row
+                    index_w2 += 1
+                index_w += 1
+
+            add.append(new)
+
+
+        for element in add:
+            all_nn.append(element)
+
+        return all_nn
+
+
 # XOR EXAMPLE
 # nn = NeuralNetwork(2, [2], 1)
 # inputs = [[1, 0], [0, 1], [1, 1], [0, 0]]
@@ -201,4 +263,5 @@ class NeuralNetwork(object):
 # print(nn.feed_forward(inputs[1]))
 # print(nn.feed_forward(inputs[2]))
 # print(nn.feed_forward(inputs[3]))
+
 
