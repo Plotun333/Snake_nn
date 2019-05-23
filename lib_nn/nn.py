@@ -189,7 +189,7 @@ class NeuralNetwork(object):
         return population
 
     @staticmethod
-    def cross(all_nn, request_num):
+    def cross_over(all_nn, request_num):
         create = request_num - len(all_nn)
         add = []
         all_percent = []
@@ -199,9 +199,7 @@ class NeuralNetwork(object):
             all_percent.append(current_percent / 100)
             current_percent -= one_percent
 
-        index = 0
         for _ in range(create):
-            #print("here")
             while True:
                 index_r = random.randint(0, len(all_nn) - 1)
                 index_r2 = random.randint(0, len(all_nn) - 1)
@@ -242,7 +240,6 @@ class NeuralNetwork(object):
 
             add.append(new)
 
-
         for element in add:
             all_nn.append(element)
 
@@ -263,5 +260,3 @@ class NeuralNetwork(object):
 # print(nn.feed_forward(inputs[1]))
 # print(nn.feed_forward(inputs[2]))
 # print(nn.feed_forward(inputs[3]))
-
-
