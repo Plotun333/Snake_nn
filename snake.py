@@ -26,7 +26,6 @@ class GameInfo(object):
         self.Score = 0
         self.display = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.clock = pygame.time.Clock()
-        self.DEATH = False
 
 
 class Snake(GameInfo):
@@ -122,6 +121,10 @@ class Snake(GameInfo):
                  self.wall_dist_down_left(),
                  self.wall_dist_left(),
                  self.wall_dist_left_up(),
+                 self.body_dist_up(),
+                 self.body_dist_down(),
+                 self.body_dist_right(),
+                 self.body_dist_left(),
                  self.food_angle(food),
                  self.distance_from_food(food)]
 
@@ -236,6 +239,58 @@ class Snake(GameInfo):
     def distance_from_food(self, food):
         return (math.hypot(food.x - self.body[0][0], food.y - self.body[0][1])) / 841
 
+    def body_dist_left(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if y == element[1] and x > element[0]:
+
+                    return (x - element[0]) / 600
+
+            index += 1
+        return 0
+
+    def body_dist_right(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if y == element[1] and x < element[0]:
+
+                    return (element[0] - x) / 600
+
+            index += 1
+        return 1
+
+    def body_dist_up(self):
+        x, y = self.body[0]
+        index = 1
+
+        for element in self.body:
+            if index != 0:
+                if x == element[0] and y > element[1]:
+
+                    return (y - element[1]) / 600
+
+            index += 1
+        return 1
+
+    def body_dist_down(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if x == element[0] and y < element[1]:
+
+                    return (element[1] - y) / 600
+
+            index += 1
+        return 1
+
 
 class Food(GameInfo):
     def __init__(self, x, y):
@@ -245,7 +300,7 @@ class Food(GameInfo):
         self.color = (255, 0, 0)
         self.width = 10
         self.height = 10
-        self.index = 0
+        self.index = 1
 
     def draw(self):
         pygame.draw.rect(self.display, self.color, (self.x, self.y, self.width, self.height))
@@ -270,8 +325,9 @@ class Game(object):
             self.all_food = []
             self.snake = Snake()
             self.all_snake = []
-            for r in range(1000):
-                self.all_food_pos.append((random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed))
+            for r in range(100):
+                self.all_food_pos.append(
+                    (random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed))
 
             for _ in population:
                 self.all_snake.append(Snake())
@@ -381,14 +437,14 @@ class Game(object):
                     self.all_food[index].draw()
                     self.all_snake[index].ai(nn, self.all_food[index], menu)
                     self.all_snake[index].draw()
-                    #self.all_snake[index].Fitness += 1
-                   # if self.all_snake[index].food_dist > self.all_snake[index].distance_from_food(self.all_food[index]):
-                       # self.all_snake[index].Fitness += 0.1
 
-                    #else:
-                        #self.all_snake[index].Fitness -= 0.1
+                    if self.all_snake[index].food_dist > self.all_snake[index].distance_from_food(self.all_food[index]):
+                        self.all_snake[index].Fitness += 1
 
-                    self.all_snake[index].food_dist = self.snake.distance_from_food(self.all_food[index])
+                    else:
+                        self.all_snake[index].Fitness -= 1
+
+                    self.all_snake[index].food_dist = self.all_snake[index].distance_from_food(self.all_food[index])
                     if turns >= max_turns:
                         remove_s = []
                         remove_f = []
@@ -403,14 +459,15 @@ class Game(object):
 
                     if self.all_snake[index].hit():
                         self.game.DEATH = True
-                        #self.all_snake[index].Fitness -= max_turns
+                        # self.all_snake[index].Fitness -= max_turns
                         remove_s.append(self.all_snake[index])
                         remove_f.append(self.all_food[index])
                         remove_nn.append(nn)
 
                     if self.all_snake[index].eat(self.all_food[index].x, self.all_food[index].y):
                         self.game.Score += 1
-                        self.all_food[index] = Food(self.all_food_pos[self.all_food[index].index][0],self.all_food_pos[self.all_food[index].index][1])
+                        self.all_food[index] = Food(self.all_food_pos[self.all_food[index].index][0],
+                                                    self.all_food_pos[self.all_food[index].index][1])
                         self.all_food[index].index += 1
                         self.game.display.fill(white)
                         self.all_snake[index].Fitness += max_turns
@@ -427,11 +484,11 @@ class Game(object):
                     self.population.remove(r)
                 menu.mainloop(events)
 
-                #self.game.display.fill(white)
+                self.game.display.fill(white)
                 text_surface2 = my_font.render('Loading: ' + str(turns) + ' / ' + str(max_turns), False, (255, 0, 0))
                 text_surface = my_font.render('Generation: ' + str(gen), False, (255, 0, 0))
-                #self.game.display.blit(text_surface2, (230, 250))
-                #self.game.display.blit(text_surface, (230, 200))
+                self.game.display.blit(text_surface2, (230, 250))
+                self.game.display.blit(text_surface, (230, 200))
                 pygame.display.flip()
                 turns += 1
 
@@ -464,23 +521,20 @@ class Game(object):
 
                     remove = []
                     for percent in all_percent:
-                        r = random.randint(2000, 9000) / 10000
+                        r = random.randint(0, 10000) / 10000
 
                         if r > percent:
-                            print(percent)
                             remove.append(next_puplation_sorted[index])
                         index += 1
-                    print(len(remove))
+
                     for r in remove:
                         next_puplation_sorted.remove(r)
                     # mutating and creating new population
 
-                    #current_population = NeuralNetwork.cross_over(next_puplation_sorted, expected)
-                    for nn in next_puplation_sorted:
-                        nn.mutate(0.001)
+                    current_population = NeuralNetwork.cross_over(next_puplation_sorted, expected)
 
-                    print("Fitness: ", All_fitness_sorted)
-                    return (next_puplation_sorted, All_fitness_sorted)
+
+                    return current_population, All_fitness_sorted
 
             else:
                 text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
@@ -488,6 +542,7 @@ class Game(object):
                 self.food.draw()
                 self.snake.move(menu)
                 self.snake.draw()
+
                 if self.snake.eat(self.food.x, self.food.y):
                     self.game.Score += 1
                     self.food = Food(random.randint(1, 59) * self.snake.speed, random.randint(1, 59) * self.snake.speed)
@@ -509,6 +564,7 @@ class Game(object):
         white = (255, 255, 255)
         self.snake = Snake()
         self.food = Food(self.all_food_pos[0][0], self.all_food_pos[0][1])
+        simulate_nn = nn[0]
 
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
@@ -554,7 +610,7 @@ class Game(object):
         my_font = pygame.font.SysFont('Comic Sans MS', 15)
 
         # frame rate + delay after every frame
-        FPS = 12
+        fps = 12
         delay = 50
         turn = 0
         while True:
@@ -583,18 +639,20 @@ class Game(object):
                 self.game.display.blit(text_surface2, (10, 40))
 
                 pygame.time.delay(delay)
-                self.game.clock.tick(FPS)
+                self.game.clock.tick(fps)
 
                 self.food.draw()
-                self.snake.ai(nn, self.food, menu)
+                self.snake.ai(simulate_nn, self.food, menu)
                 self.snake.draw()
 
                 if self.snake.hit():
+                    for n in nn:
+                        n.mutate(0.01)
                     return None
 
                 if self.snake.eat(self.food.x, self.food.y):
                     self.game.Score += 1
-                    self.food = Food(self.all_food_pos[self.food.index][0],self.all_food_pos[self.food.index][1])
+                    self.food = Food(self.all_food_pos[self.food.index][0], self.all_food_pos[self.food.index][1])
                     self.food.index += 1
                     self.game.display.fill(white)
 
@@ -612,23 +670,32 @@ class Game(object):
 # initial population
 # params
 population_num = 1000
-input = 10
+input = 14
 hidden = [70, 10]
 output = 3
 turns_in_simulation = 300
 
 population = NeuralNetwork.initial_population(population_num, input, hidden, output)
 gen = 1
-while True:
-    game = Game(population)
 
-    population = game.game_loop(True, turns_in_simulation,0, gen)
+if __name__ == '__main__':
+    while True:
+        game = Game(population)
 
-    if population == "Player":
-        population = None
-    elif population == "AI":
-        population = NeuralNetwork.initial_population(population_num, input, hidden, output)
-    elif population is not None:
-        game.simulate(population[0][0], population[1])
-        population = population[0]
-    gen += 1
+        population = game.game_loop(True, turns_in_simulation, 0, gen)
+
+        if population == "Player":
+            population = None
+        elif population == "AI":
+            population = NeuralNetwork.initial_population(population_num, input, hidden, output)
+        elif population is not None:
+            print("Gen: ", gen)
+            all_fit = 0
+            for fit in population[1]:
+                all_fit += fit
+            print("Average Fitness: ", all_fit/len(population[1]))
+            print("Fitness: ", population[1])
+            print('\n')
+            game.simulate(population[0], population[1])
+            population = population[0]
+        gen += 1
