@@ -125,8 +125,10 @@ class Snake(GameInfo):
                  self.body_dist_down(),
                  self.body_dist_right(),
                  self.body_dist_left(),
-                 self.food_angle(food),
-                 self.distance_from_food(food)]
+                 self.food_dist_up(food),
+                 self.food_dist_down(food),
+                 self.food_dist_right(food),
+                 self.food_dist_left(food)]
 
         """print("UP: ", self.wall_dist_up(), '\n',
               "UP-RIGHT: ", self.wall_dist_up_right(), '\n',
@@ -238,6 +240,66 @@ class Snake(GameInfo):
 
     def distance_from_food(self, food):
         return (math.hypot(food.x - self.body[0][0], food.y - self.body[0][1])) / 841
+
+    def food_dist_up_right(self, food):
+        x, y = self.body[0]
+        if food.x - x == y - food.y and food.x > x:
+
+            return (math.hypot(food.x - x, food.y - y)) / 841
+        else:
+            return 2
+
+    def food_dist_right_down(self, food):
+        x, y = self.body[0]
+        if food.x - food.y == x - y and food.x > x:
+
+            return (math.hypot(food.x - x, food.y - y)) / 841
+        else:
+            return 2
+
+    def food_dist_down_left(self, food):
+        x, y = self.body[0]
+        if food.x - x == y - food.y and food.x < x:
+
+            return (math.hypot(food.x - x, food.y - y)) / 841
+        else:
+            return 2
+
+    def food_dist_left_up(self, food):
+        x, y = self.body[0]
+        if - food.y + food.x == - y + x and food.x < x:
+
+            return (math.hypot(food.x - x, food.y - y)) / 841
+        else:
+            return 2
+
+    def food_dist_right(self, food):
+        x, y = self.body[0]
+        if food.y == y and food.x > x:
+            return (food.x - x) / 600
+        else:
+            return 2
+
+    def food_dist_left(self, food):
+        x, y = self.body[0]
+        if food.y == y and food.x < x:
+            return (x - food.x) / 600
+        else:
+            return 2
+
+    def food_dist_up(self, food):
+        x, y = self.body[0]
+        if food.x == x and food.y < y:
+            return (y - food.y) / 600
+        else:
+            return 2
+
+    def food_dist_down(self, food):
+        x, y = self.body[0]
+        if food.x == x and food.y > y:
+            return (food.y - y) / 600
+        else:
+            return 2
 
     def body_dist_left(self):
         x, y = self.body[0]
@@ -484,7 +546,7 @@ class Game(object):
                     self.population.remove(r)
                 menu.mainloop(events)
 
-                self.game.display.fill(white)
+                # self.game.display.fill(white)
                 text_surface2 = my_font.render('Loading: ' + str(turns) + ' / ' + str(max_turns), False, (255, 0, 0))
                 text_surface = my_font.render('Generation: ' + str(gen), False, (255, 0, 0))
                 self.game.display.blit(text_surface2, (230, 250))
@@ -542,6 +604,15 @@ class Game(object):
                 self.food.draw()
                 self.snake.move(menu)
                 self.snake.draw()
+                # print("UP: ", self.snake.food_dist_up(self.food))
+                # print("DOWN: ", self.snake.food_dist_down(self.food))
+                # print("RIGHT: ", self.snake.food_dist_right(self.food))
+                # print("LEFT: ", self.snake.food_dist_left(self.food))
+                print("UP-RIGHT: ", self.snake.food_dist_up_right(self.food))
+                print("RIGHT-DOWN: ", self.snake.food_dist_right_down(self.food))
+                print("DOWN-LEFT: ", self.snake.food_dist_down_left(self.food))
+                print("LEFT-UP: ", self.snake.food_dist_left_up(self.food))
+
 
                 if self.snake.eat(self.food.x, self.food.y):
                     self.game.Score += 1
@@ -669,9 +740,9 @@ class Game(object):
 
 # initial population
 # params
-population_num = 1000
-input = 14
-hidden = [70, 10]
+population_num = 2000
+input = 16
+hidden = [16]
 output = 3
 turns_in_simulation = 300
 
@@ -694,7 +765,7 @@ if __name__ == '__main__':
             for fit in population[1]:
                 all_fit += fit
             print("Average Fitness: ", all_fit/len(population[1]))
-            print("Fitness: ", population[1])
+            # print("Fitness: ", population[1])
             print('\n')
             game.simulate(population[0], population[1])
             population = population[0]
