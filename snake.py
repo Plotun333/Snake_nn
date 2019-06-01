@@ -6,7 +6,6 @@ import sys
 import os
 import random
 import math
-
 from pygameMenu.locals import *
 from lib_nn.nn import NeuralNetwork
 
@@ -113,7 +112,9 @@ class Snake(GameInfo):
                 if keys[pygame.K_ESCAPE]:
                     menu.enable()
 
-        input = [self.wall_dist_up(),
+        input = [
+                 # eight wall inputs
+                 self.wall_dist_up(),
                  self.wall_dist_up_right(),
                  self.wall_dist_right(),
                  self.wall_dist_right_down(),
@@ -121,14 +122,27 @@ class Snake(GameInfo):
                  self.wall_dist_down_left(),
                  self.wall_dist_left(),
                  self.wall_dist_left_up(),
+
+                 # eight body inputs
                  self.body_dist_up(),
+                 self.body_dist_up_right(),
                  self.body_dist_down(),
+                 self.body_dist_right_down(),
                  self.body_dist_right(),
+                 self.body_dist_down_left(),
                  self.body_dist_left(),
+                 self.body_dist_left_up(),
+
+                 # eight food distance inputs
                  self.food_dist_up(food),
-                 self.food_dist_down(food),
+                 self.food_dist_up_right(food),
                  self.food_dist_right(food),
-                 self.food_dist_left(food)]
+                 self.food_dist_right_down(food),
+                 self.food_dist_down(food),
+                 self.food_dist_down_left(food),
+                 self.food_dist_left(food),
+                 self.food_dist_left_up(food)
+        ]
 
         """print("UP: ", self.wall_dist_up(), '\n',
               "UP-RIGHT: ", self.wall_dist_up_right(), '\n',
@@ -141,17 +155,21 @@ class Snake(GameInfo):
               "ANGLE: ", self.food_angle(food), '\n',
               "DISTANCE: ", self.distance_from_food(food))"""
 
+        # add the inputs to the neural network (feed forward function)
+
         output = nn.feed_forward(input)
 
         index = 0
         current_val = 2
+        dir_index = None
         for val in output:
             if val < current_val:
                 dir_index = index
             current_val = val
             index += 1
-        # neural network will give three outputs if forward or right or right
+        # neural network will give three outputs if forward or right or left
         # forward doesn't change anything in the current game state
+        # so 1 is right and 2 is left
 
         if dir_index == 1:
             if self.dir == "up":
@@ -214,30 +232,32 @@ class Snake(GameInfo):
         else:
             return degree / 360
 
+    # WALL
     def wall_dist_left(self):
-        return (self.body[0][0] + 10) / 610
+        return 1 - ((self.body[0][0] + 10) / 610)
 
     def wall_dist_right(self):
-        return (self.screen_height - self.body[0][0]) / 600
+        return 1 - ((self.screen_height - self.body[0][0]) / 600)
 
     def wall_dist_up(self):
-        return (self.body[0][1] + 10) / 610
+        return 1 - ((self.body[0][1] + 10) / 610)
 
     def wall_dist_down(self):
-        return (self.screen_height - self.body[0][1]) / 600
+        return 1 - ((self.screen_height - self.body[0][1]) / 600)
 
     def wall_dist_up_right(self):
-        return (1 / 2) ** (self.wall_dist_up() ** 2 + self.wall_dist_right() ** 2)
+        return 1 - ((1 / 2) ** (self.wall_dist_up() ** 2 + self.wall_dist_right() ** 2))
 
     def wall_dist_right_down(self):
-        return (1 / 2) ** (self.wall_dist_right() ** 2 + self.wall_dist_down() ** 2)
+        return 1 - ((1 / 2) ** (self.wall_dist_right() ** 2 + self.wall_dist_down() ** 2))
 
     def wall_dist_down_left(self):
-        return (1 / 2) ** (self.wall_dist_down() ** 2 + self.wall_dist_left() ** 2)
+        return 1 - ((1 / 2) ** (self.wall_dist_down() ** 2 + self.wall_dist_left() ** 2))
 
     def wall_dist_left_up(self):
-        return (1 / 2) ** (self.wall_dist_left() ** 2 + self.wall_dist_up() ** 2)
+        return 1 - ((1 / 2) ** (self.wall_dist_left() ** 2 + self.wall_dist_up() ** 2))
 
+    # FOOD
     def distance_from_food(self, food):
         return (math.hypot(food.x - self.body[0][0], food.y - self.body[0][1])) / 841
 
@@ -245,62 +265,63 @@ class Snake(GameInfo):
         x, y = self.body[0]
         if food.x - x == y - food.y and food.x > x:
 
-            return (math.hypot(food.x - x, food.y - y)) / 841
+            return 1 - ((math.hypot(food.x - x, food.y - y)) / 841)
         else:
-            return 2
+            return -1
 
     def food_dist_right_down(self, food):
         x, y = self.body[0]
         if food.x - food.y == x - y and food.x > x:
 
-            return (math.hypot(food.x - x, food.y - y)) / 841
+            return 1 - ((math.hypot(food.x - x, food.y - y)) / 841)
         else:
-            return 2
+            return -1
 
     def food_dist_down_left(self, food):
         x, y = self.body[0]
         if food.x - x == y - food.y and food.x < x:
 
-            return (math.hypot(food.x - x, food.y - y)) / 841
+            return 1 - ((math.hypot(food.x - x, food.y - y)) / 841)
         else:
-            return 2
+            return -1
 
     def food_dist_left_up(self, food):
         x, y = self.body[0]
         if - food.y + food.x == - y + x and food.x < x:
 
-            return (math.hypot(food.x - x, food.y - y)) / 841
+            return 1 - ((math.hypot(food.x - x, food.y - y)) / 841)
         else:
-            return 2
+            return -1
 
     def food_dist_right(self, food):
         x, y = self.body[0]
         if food.y == y and food.x > x:
-            return (food.x - x) / 600
+            return 1 - ((food.x - x) / 600)
         else:
-            return 2
+            return -1
 
     def food_dist_left(self, food):
         x, y = self.body[0]
         if food.y == y and food.x < x:
-            return (x - food.x) / 600
+            return 1 - ((x - food.x) / 600)
         else:
-            return 2
+            return -1
 
     def food_dist_up(self, food):
         x, y = self.body[0]
         if food.x == x and food.y < y:
-            return (y - food.y) / 600
+            return 1 - ((y - food.y) / 600)
         else:
-            return 2
+            return -1
 
     def food_dist_down(self, food):
         x, y = self.body[0]
         if food.x == x and food.y > y:
-            return (food.y - y) / 600
+            return 1 - ((food.y - y) / 600)
         else:
-            return 2
+            return -1
 
+    # BODY
     def body_dist_left(self):
         x, y = self.body[0]
         index = 0
@@ -309,10 +330,10 @@ class Snake(GameInfo):
             if index != 0:
                 if y == element[1] and x > element[0]:
 
-                    return (x - element[0]) / 600
+                    return 1 - ((x - element[0]) / 600)
 
             index += 1
-        return 0
+        return -1
 
     def body_dist_right(self):
         x, y = self.body[0]
@@ -322,10 +343,10 @@ class Snake(GameInfo):
             if index != 0:
                 if y == element[1] and x < element[0]:
 
-                    return (element[0] - x) / 600
+                    return 1 - ((element[0] - x) / 600)
 
             index += 1
-        return 1
+        return -1
 
     def body_dist_up(self):
         x, y = self.body[0]
@@ -335,10 +356,10 @@ class Snake(GameInfo):
             if index != 0:
                 if x == element[0] and y > element[1]:
 
-                    return (y - element[1]) / 600
+                    return 1 - ((y - element[1]) / 600)
 
             index += 1
-        return 1
+        return -1
 
     def body_dist_down(self):
         x, y = self.body[0]
@@ -348,10 +369,58 @@ class Snake(GameInfo):
             if index != 0:
                 if x == element[0] and y < element[1]:
 
-                    return (element[1] - y) / 600
+                    return 1 - ((element[1] - y) / 600)
 
             index += 1
-        return 1
+        return -1
+
+    def body_dist_up_right(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if element[0] - x == y - element[1] and element[0] > x:
+                    return 1 - ((math.hypot(x - element[0], y - element[1])) / 841)
+
+            index += 1
+        return -1
+
+    def body_dist_right_down(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if element[0] - element[1] == x - y and element[0] > x:
+                    return 1 - ((math.hypot(x - element[0], y - element[1])) / 841)
+
+            index += 1
+        return -1
+
+    def body_dist_down_left(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if element[0] - x == y - element[1] and element[0] < x:
+                    return 1 - ((math.hypot(x - element[0], y - element[1])) / 841)
+
+            index += 1
+        return -1
+
+    def body_dist_left_up(self):
+        x, y = self.body[0]
+        index = 0
+
+        for element in self.body:
+            if index != 0:
+                if - element[1] + element[0] == - y + x and element[0] < x:
+                    return 1 - ((math.hypot(x - element[0], y - element[1])) / 841)
+
+            index += 1
+        return -1
 
 
 class Food(GameInfo):
@@ -521,7 +590,7 @@ class Game(object):
 
                     if self.all_snake[index].hit():
                         self.game.DEATH = True
-                        # self.all_snake[index].Fitness -= max_turns
+                        self.all_snake[index].Fitness -= max_turns
                         remove_s.append(self.all_snake[index])
                         remove_f.append(self.all_food[index])
                         remove_nn.append(nn)
@@ -595,7 +664,6 @@ class Game(object):
 
                     current_population = NeuralNetwork.cross_over(next_puplation_sorted, expected)
 
-
                     return current_population, All_fitness_sorted
 
             else:
@@ -608,11 +676,10 @@ class Game(object):
                 # print("DOWN: ", self.snake.food_dist_down(self.food))
                 # print("RIGHT: ", self.snake.food_dist_right(self.food))
                 # print("LEFT: ", self.snake.food_dist_left(self.food))
-                print("UP-RIGHT: ", self.snake.food_dist_up_right(self.food))
-                print("RIGHT-DOWN: ", self.snake.food_dist_right_down(self.food))
-                print("DOWN-LEFT: ", self.snake.food_dist_down_left(self.food))
-                print("LEFT-UP: ", self.snake.food_dist_left_up(self.food))
-
+                # print("UP-RIGHT: ", self.snake.body_dist_up_right())
+                # print("RIGHT-DOWN: ", self.snake.body_dist_right_down())
+                # print("DOWN-LEFT: ", self.snake.body_dist_down_left())
+                # print("LEFT-UP: ", self.snake.body_dist_left_up())
 
                 if self.snake.eat(self.food.x, self.food.y):
                     self.game.Score += 1
@@ -741,14 +808,16 @@ class Game(object):
 # initial population
 # params
 population_num = 2000
-input = 16
+input = 24
 hidden = [16]
 output = 3
-turns_in_simulation = 300
+turns_in_simulation = 600
 
 population = NeuralNetwork.initial_population(population_num, input, hidden, output)
 gen = 1
 
+prev_a = 0
+prev_best = 0
 if __name__ == '__main__':
     while True:
         game = Game(population)
@@ -765,8 +834,13 @@ if __name__ == '__main__':
             for fit in population[1]:
                 all_fit += fit
             print("Average Fitness: ", all_fit/len(population[1]))
+            print("improvement: ", all_fit/len(population[1])-prev_a)
+            print("Best Fitness:", population[1][0])
+            print("improvement: ", population[1][0] - prev_best)
             # print("Fitness: ", population[1])
             print('\n')
             game.simulate(population[0], population[1])
             population = population[0]
+            prev_a = all_fit/len(population[1][0])
+            prev_best = population[1][0]
         gen += 1
