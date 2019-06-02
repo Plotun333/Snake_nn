@@ -68,7 +68,10 @@ class Game(object):
         def train_ai():
             global Play_normal
             Play_normal = "AI"
-            print("Here")
+
+        def best_ai():
+            global Play_normal
+            Play_normal = "Show_best"
 
         menu = pygameMenu.Menu(self.game.display,
                                bgfun=main_menu_background,
@@ -84,7 +87,7 @@ class Game(object):
 
         menu.add_option("New Game", play)
         menu.add_option("Train AI", train_ai)
-        menu.add_option("Player vs Best AI", train_ai)
+        menu.add_option("Best AI", best_ai)
         menu.add_option('Exit', PYGAME_MENU_EXIT)
 
         # -----------------------------------------------------------------------------
@@ -242,7 +245,7 @@ class Game(object):
             else:
                 self.game.display.fill((0, 0, 0))
 
-                text_surface = my_font.render('Score:  ' + str(self.game.Score), False, (255, 0, 0))
+                text_surface = my_font.render('Score: ' + str(self.game.Score), False, (255, 0, 0))
                 self.game.display.blit(text_surface, (10, 10))
                 self.food.draw()
                 self.snake.move(menu)
@@ -254,7 +257,7 @@ class Game(object):
                 if self.snake.eat(self.food.x, self.food.y):
                     self.game.Score += 1
                     self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
-                    self.game.display.fill(white)
+                    self.game.display.fill((0, 0, 0))
 
                 if self.snake.hit():
                     return None
@@ -272,7 +275,7 @@ class Game(object):
         white = (255, 255, 255)
         self.snake = Snake()
         self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
-        simulate_nn = nn[0]
+        simulate_nn = nn
 
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
@@ -292,6 +295,10 @@ class Game(object):
             global Play_normal
             Play_normal = "AI"
 
+        def best_ai():
+            global Play_normal
+            Play_normal = "Show_best"
+
         menu = pygameMenu.Menu(self.game.display,
                                bgfun=main_menu_background,
                                enabled=False,
@@ -306,7 +313,7 @@ class Game(object):
 
         menu.add_option("New Game", play)
         menu.add_option("Train AI", train_ai)
-        menu.add_option("Player vs Best AI", train_ai)
+        menu.add_option("Best AI", best_ai)
         menu.add_option('Exit', PYGAME_MENU_EXIT)
 
         # -----------------------------------------------------------------------------
@@ -322,6 +329,7 @@ class Game(object):
         delay = 0
         turn = 0
         while True:
+            self.game.display.fill((0, 0, 0))
             if turn != 300:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -337,14 +345,15 @@ class Game(object):
                 events = pygame.event.get()
                 self.game.display.fill(white)
                 all_fit = 0
-                for fit in fitness:
-                    all_fit += fit
-                average = all_fit / len(fitness)
-                text_surface = my_font.render('Best Fitness:  ' + str(fitness[0]),
-                                              False, (100, 200, 24))
-                text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
-                self.game.display.blit(text_surface, (500, 200))
-                self.game.display.blit(text_surface2, (500, 175))
+                if not fitness == "unknown":
+                    for fit in fitness:
+                        all_fit += fit
+                    average = all_fit / len(fitness)
+                    text_surface = my_font.render('Best Fitness: ' + str(fitness[0]),
+                                                  False, (100, 200, 24))
+                    text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
+                    self.game.display.blit(text_surface, (500, 200))
+                    self.game.display.blit(text_surface2, (500, 175))
 
                 pygame.time.delay(delay)
                 self.game.clock.tick(fps)
@@ -360,7 +369,7 @@ class Game(object):
                     self.game.Score += 1
                     self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
                     self.food.index += 1
-                    self.game.display.fill(white)
+                    self.game.display.fill((0, 0, 0))
 
                 menu.mainloop(events)
 

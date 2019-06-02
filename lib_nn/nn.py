@@ -15,9 +15,17 @@ class NeuralNetwork(object):
             self.hidden_weights = nn.hidden_weights
             self.hidden_biases = nn.hidden_biases
             self.activation_func = NeuralNetwork.sigmoid
+            # REMOVE USED ONLY IN SNAKE PROJECT
+            self.Fitness = 0
+            # ---------------------------------
+
         else:
             self.activation_func = NeuralNetwork.sigmoid
             self.outputs_hidden = []
+
+            # REMOVE USED ONLY IN SNAKE PROJECT
+            self.Fitness = 0
+            # ---------------------------------
 
             self.input_nodes = input_nodes
             self.output_nodes = output_nodes

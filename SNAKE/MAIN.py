@@ -1,5 +1,7 @@
 # import libraries
 import os
+import pickle
+
 
 # import files
 from lib_nn.nn import NeuralNetwork
@@ -30,9 +32,36 @@ if __name__ == '__main__':
         # if the user changes the game in the menu the game loop will return: Player or AI
         if population == "Player":
             population = None
+
         elif population == "AI":
             population = NeuralNetwork.initial_population(population_num, input_nn, hidden, output)
+
+        elif population == "Show_best":
+            with open('best_nn_data.pkl', 'rb') as input_file:
+                best_nn = pickle.load(input_file)
+
+            game.simulate(best_nn)
+            population = NeuralNetwork.initial_population(population_num, input_nn, hidden,
+                                                          output)  # creating initial population
+            gen = 1  # the simulation starts at generation 1
+
         elif population is not None:
+            # save the best snake into a file using pickle
+            # checking if the snake is really the best snake ever created
+            population[0][0].Fitness = population[1][0]
+            try:
+                with open('best_nn_data.pkl', 'rb') as input_file:
+                    best_nn = pickle.load(input_file)
+                if best_nn.Fitness < population[0][0].Fitness:
+                    best_nn = population[0][0]
+                    with open('best_nn_data.pkl', 'wb') as output:
+                        pickle.dump(best_nn, output, pickle.HIGHEST_PROTOCOL)
+
+            except FileNotFoundError:
+                with open('best_nn_data.pkl', 'wb') as output:
+                    best_nn = population[0][0]
+                    pickle.dump(best_nn, output, pickle.HIGHEST_PROTOCOL)
+
             # population is a tuple with the new crossed over population and all of the sorted fitness from best to
             # worst
             print("Gen: ", gen)
@@ -42,9 +71,10 @@ if __name__ == '__main__':
             print("Average Fitness: ", all_fit / len(population[1]))
             print("Best Fitness:", population[1][0])
             print('\n')
+
             # every five simulation the best player will be simulated alone
-            if gen % 5 == 0:
-                game.simulate(population[0], population[1])
+            # if gen % 5 == 0:
+            # game.simulate(population[0][0], population[1])
 
             for nn in population[0]:  # mutate
                 nn.mutate(0.01)
