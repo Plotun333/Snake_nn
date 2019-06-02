@@ -19,7 +19,7 @@ class Matrix(object):
     def randomize(self):
         for row in range(self.rows):
             for col in range(self.cols):
-                self.data[row][col] = (random.randint(0, 2000)/1000)-1
+                self.data[row][col] = (random.randint(0, 2000) / 1000) - 1
 
     @staticmethod
     def from_array(arr):
@@ -28,7 +28,7 @@ class Matrix(object):
             m.data[i][0] = arr[i]
         return m
 
-    def to_Array(self):
+    def to_array(self):
         arr = []
         for row in range(self.rows):
             for col in range(self.cols):
@@ -64,7 +64,7 @@ class Matrix(object):
         result = Matrix(sub.rows, sub.cols)
         for row in range(result.rows):
             for col in range(result.cols):
-                 result.data[row][col] = sub.data[row][col] - sub2.data[row][col]
+                result.data[row][col] = sub.data[row][col] - sub2.data[row][col]
 
         return result
 
@@ -90,8 +90,7 @@ class Matrix(object):
     def multiply_to(self, multiply):
         for row in range(self.rows):
             for col in range(self.cols):
-
-                    self.data[row][col] *= multiply
+                self.data[row][col] *= multiply
 
     @staticmethod
     def divide(d1, d2):
@@ -110,7 +109,7 @@ class Matrix(object):
     def divide_to(self, divide):
         for row in range(self.rows):
             for col in range(self.cols):
-                    self.data[row][col] /= divide
+                self.data[row][col] /= divide
 
     @staticmethod
     def map(matrix, fn):
@@ -134,4 +133,3 @@ class Matrix(object):
             for col in range(self.cols):
                 m.data[row][col] = self.data[row][col]
         return m
-

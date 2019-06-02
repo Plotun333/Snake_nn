@@ -54,7 +54,7 @@ class NeuralNetwork(object):
         return 1 / (1 + math.exp(-num))
 
     @staticmethod
-    def dsigmoid(num):
+    def d_sigmoid(num):
         return num * (1 - num)
 
     def feed_forward(self, input_array):
@@ -80,7 +80,7 @@ class NeuralNetwork(object):
         output = Matrix.map(output, self.activation_func)
         self.outputs_hidden.append(output)
 
-        return output.to_Array()
+        return output.to_array()
 
     # train can only work with a neural net with one hidden layer
     def train(self, input_array, target_array, learning_rate=0.1, epoch=50000, ran=False):
@@ -90,7 +90,7 @@ class NeuralNetwork(object):
             return None
         index = 0
         progress = 0
-        for procent in range(epoch):
+        for percent in range(epoch):
             if index == len(input_array) - 1:
                 index = 0
             if ran:
@@ -118,9 +118,9 @@ class NeuralNetwork(object):
 
             if progress / epoch >= 0.1:
                 progress = 0
-                print('Loading... ', procent / epoch * 100, '%')
+                print('Loading... ', percent / epoch * 100, '%')
 
-            gradients = Matrix.map(outputs, self.dsigmoid)
+            gradients = Matrix.map(outputs, self.d_sigmoid)
             gradients = Matrix.multiply(gradients, output_errors)
             gradients.multiply_to(learning_rate)
 
@@ -136,7 +136,7 @@ class NeuralNetwork(object):
 
             hidden_errors = Matrix.multiply(who_t, output_errors)
 
-            hidden_gradient = Matrix.map(hidden, self.dsigmoid)
+            hidden_gradient = Matrix.map(hidden, self.d_sigmoid)
             hidden_gradient = Matrix.multiply(hidden_gradient, hidden_errors)
             hidden_gradient.multiply_to(learning_rate)
 
@@ -278,4 +278,3 @@ class NeuralNetwork(object):
 # for n in nn.hidden_biases:
 #    n.print()
 # print("----------")
-
