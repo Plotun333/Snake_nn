@@ -31,14 +31,15 @@ class Game(object):
             self.all_food = []
             self.snake = Snake()
             self.all_snake = []
+            self.scores = []  # Ai scorers
 
             for _ in range(len(population)):
                 self.all_snake.append(Snake())
+                self.scores.append(0)  # append a score
                 self.all_food.append(
                     Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed))
 
         self.population = population
-
 
     def game_loop(self, show=True, max_turns=300, delay=50, gen=None):
         global Play_normal
@@ -104,7 +105,6 @@ class Game(object):
         FPS = 12
         delay = delay
 
-        scores = []  # Ai scorers
         while True:
             events = pygame.event.get()
 
@@ -170,7 +170,7 @@ class Game(object):
                         self.game.Score += 1
                         self.all_food[index] = Food(random.randint(1, 39) * self.snake.speed,
                                                     random.randint(1, 39) * self.snake.speed)
-                        self.all_food[index].index += 1
+                        self.scores[index] += 1
                         self.game.display.fill((0, 0, 0))
                         self.all_snake[index].Fitness += max_turns
 
@@ -186,9 +186,11 @@ class Game(object):
                     self.population.remove(r)
                 menu.mainloop(events)
 
-                text_surface2 = my_font.render('Loading: ' + str(turns) + ' / ' + str(max_turns), False, (255, 0, 0))
-                text_surface = my_font.render('Generation: ' + str(gen), False, (255, 0, 0))
-                self.game.display.blit(text_surface2, (500, 200))
+                text_surface3 = my_font.render('Loading: ' + str(turns) + ' / ' + str(max_turns), False, (255, 0, 0))
+                text_surface2 = my_font.render('Generation: ' + str(gen), False, (255, 0, 0))
+                text_surface = my_font.render('Best global score: ' + str(max(self.scores)), False, (255, 0, 0))
+                self.game.display.blit(text_surface3, (500, 200))
+                self.game.display.blit(text_surface2, (500, 175))
                 self.game.display.blit(text_surface, (500, 150))
                 pygame.draw.line(self.game.display, (255, 255, 255), (self.game.screen_height, 0),
                                  (self.game.screen_height, self.game.screen_height))
@@ -342,7 +344,7 @@ class Game(object):
                                               False, (100, 200, 24))
                 text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
                 self.game.display.blit(text_surface, (500, 200))
-                self.game.display.blit(text_surface2, (500, 150))
+                self.game.display.blit(text_surface2, (500, 175))
 
                 pygame.time.delay(delay)
                 self.game.clock.tick(fps)
