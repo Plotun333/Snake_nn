@@ -170,7 +170,7 @@ class NeuralNetwork(object):
     def mutate(self, rate):
         def mutate(val):
             if (random.randint(0, 100) / 100) < rate:
-                return (random.randint(0, 2000) / 1000) - 1
+                return val + (random.randint(0, 2000) / 1000) - 1
             else:
                 return val
 
@@ -209,6 +209,7 @@ class NeuralNetwork(object):
             current_percent -= one_percent
 
         for _ in range(create):
+
             while True:
                 index_r = random.randint(0, len(all_nn) - 1)
                 index_r2 = random.randint(0, len(all_nn) - 1)

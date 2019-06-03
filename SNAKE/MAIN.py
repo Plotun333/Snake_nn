@@ -99,8 +99,11 @@ if __name__ == '__main__':
             # if gen % 5 == 0:
             # game.simulate(population[0][0], population[1])
 
-            for nn in population[0]:  # mutate
-                nn.mutate(0.01)
+            for nn in population[0]:
+                # mutate
+                # do not mutate the best snake
+                if not nn == population[0][0]:
+                    nn.mutate(0.01)
             population = population[0]
 
             gen += 1

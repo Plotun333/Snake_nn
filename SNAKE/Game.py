@@ -171,7 +171,7 @@ class Game(object):
                                                     random.randint(1, 39) * self.snake.speed)
                         self.scores[index] += 1
                         self.game.display.fill((0, 0, 0))
-                        self.all_snake[index].Fitness += max_turns
+                        self.all_snake[index].Fitness += max_turns/2
 
                     index += 1
                 for r in remove_s:
@@ -323,7 +323,6 @@ class Game(object):
         # frame rate + delay after every frame
         fps = 36
         delay = 0
-        turn = 0
         while True:
 
             for event in pygame.event.get():
@@ -372,4 +371,3 @@ class Game(object):
 
             if Play_normal != "None":
                 return Play_normal
-
