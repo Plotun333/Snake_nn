@@ -137,40 +137,29 @@ class Snake(GameInfo):
 
         output = nn.feed_forward(input_nn)
 
-        index = 0
-        current_val = 2
-        dir_index = None
         # get the biggest output witch will be the ai's choice
-        for val in output:
-            if val < current_val:
-                dir_index = index
-            current_val = val
-            index += 1
-        # neural network will give three outputs if forward or right or left
-        # forward doesn't change anything in the current game state
-        # so 1 is right and 2 is left
+        dir_index = output.index(max(output))
 
+        # neural network will give four outputs: up or right or left or down
         # left
-        if dir_index == 1:
-            if self.dir == "up":
-                self.dir = "right"
-            elif self.dir == "right":
-                self.dir = "down"
-            elif self.dir == "down":
-                self.dir = "right"
-            elif self.dir == "left":
-                self.dir = "up"
+        if dir_index == 0:
+            if not self.dir == "right":
+                self.dir = "left"
+
         # right
+        elif dir_index == 1:
+            if not self.dir == "left":
+                self.dir = "right"
+
+        # up
         elif dir_index == 2:
-            if self.dir == "up":
-                self.dir = "left"
-            elif self.dir == "right":
+            if not self.dir == "down":
                 self.dir = "up"
-            elif self.dir == "down":
-                self.dir = "left"
-            elif self.dir == "left":
+
+        # down
+        elif dir_index == 3:
+            if not self.dir == "up":
                 self.dir = "down"
-        # forward nothing changes
 
     def eat(self, x, y):
         if x == self.body[0][0] and y == self.body[0][1]:

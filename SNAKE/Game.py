@@ -143,11 +143,7 @@ class Game(object):
                     self.all_snake[index].ai(nn, self.all_food[index], menu)
                     self.all_snake[index].draw()
 
-                    if self.all_snake[index].food_dist > self.all_snake[index].distance_from_food(self.all_food[index]):
-                        self.all_snake[index].Fitness += 1
-
-                    else:
-                        self.all_snake[index].Fitness -= 1
+                    self.all_snake[index].Fitness += 1
 
                     self.all_snake[index].food_dist = self.all_snake[index].distance_from_food(self.all_food[index])
                     if turns >= max_turns:
@@ -329,54 +325,51 @@ class Game(object):
         delay = 0
         turn = 0
         while True:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                keys = pygame.key.get_pressed()
+
+                for _ in keys:
+                    if keys[pygame.K_ESCAPE]:
+                        menu.enable()
+
+            events = pygame.event.get()
+            self.game.display.fill(white)
+            all_fit = 0
+            if not fitness == "unknown":
+                for fit in fitness:
+                    all_fit += fit
+                average = all_fit / len(fitness)
+                text_surface = my_font.render('Best Fitness: ' + str(fitness[0]),
+                                              False, (100, 200, 24))
+                text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
+                self.game.display.blit(text_surface, (500, 200))
+                self.game.display.blit(text_surface2, (500, 175))
+
+            pygame.time.delay(delay)
+            self.game.clock.tick(fps)
             self.game.display.fill((0, 0, 0))
-            if turn != 300:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
+            self.food.draw()
+            self.snake.ai(simulate_nn, self.food, menu)
+            self.snake.draw()
 
-                    keys = pygame.key.get_pressed()
-
-                    for _ in keys:
-                        if keys[pygame.K_ESCAPE]:
-                            menu.enable()
-
-                events = pygame.event.get()
-                self.game.display.fill(white)
-                all_fit = 0
-                if not fitness == "unknown":
-                    for fit in fitness:
-                        all_fit += fit
-                    average = all_fit / len(fitness)
-                    text_surface = my_font.render('Best Fitness: ' + str(fitness[0]),
-                                                  False, (100, 200, 24))
-                    text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
-                    self.game.display.blit(text_surface, (500, 200))
-                    self.game.display.blit(text_surface2, (500, 175))
-
-                pygame.time.delay(delay)
-                self.game.clock.tick(fps)
-
-                self.food.draw()
-                self.snake.ai(simulate_nn, self.food, menu)
-                self.snake.draw()
-
-                if self.snake.hit():
-                    return None
-
-                if self.snake.eat(self.food.x, self.food.y):
-                    self.game.Score += 1
-                    self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
-                    self.food.index += 1
-                    self.game.display.fill((0, 0, 0))
-
-                menu.mainloop(events)
-
-                pygame.display.flip()
-
-                if Play_normal != "None":
-                    return Play_normal
-            else:
+            if self.snake.hit():
                 return None
-            turn += 1
+
+            if self.snake.eat(self.food.x, self.food.y):
+                self.game.Score += 1
+                self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
+                self.food.index += 1
+                self.game.display.fill((0, 0, 0))
+
+            menu.mainloop(events)
+
+            pygame.display.flip()
+
+            if Play_normal != "None":
+                return Play_normal
+
