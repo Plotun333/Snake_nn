@@ -143,7 +143,7 @@ class Game(object):
                     self.all_snake[index].ai(nn, self.all_food[index], menu)
                     self.all_snake[index].draw()
 
-                    self.all_snake[index].Fitness += 1
+                    self.all_snake[index].Fitness += 2
 
                     self.all_snake[index].food_dist = self.all_snake[index].distance_from_food(self.all_food[index])
                     if turns >= max_turns:
@@ -160,7 +160,7 @@ class Game(object):
 
                     if self.all_snake[index].hit():
                         self.game.DEATH = True
-                        self.all_snake[index].Fitness -= max_turns
+                        # self.all_snake[index].Fitness -= max_turns
                         remove_s.append(self.all_snake[index])
                         remove_f.append(self.all_food[index])
                         remove_nn.append(nn)

@@ -12,7 +12,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 # initial population
 # params
-population_num = 1000  # number of snakes in population
+population_num = 2000  # number of snakes in population
 input_nn = 24  # number of inputs
 hidden = [18]  # number of hidden layers
 output = 4  # number of outputs: up / left / right / down
@@ -44,6 +44,7 @@ if __name__ == '__main__':
             with open('best_nn_data.pkl', 'rb') as input_file:
                 best_nn = pickle.load(input_file)
                 print(best_nn.Fitness)
+            game.simulate(best_nn)
 
             break
 
@@ -77,8 +78,8 @@ if __name__ == '__main__':
             if gen % 5 == 0:
                 plt.plot(x, y, label='Fitness')
 
-                plt.xlabel('Average Fitness')
-                plt.ylabel('Generations')
+                plt.xlabel('Generations')
+                plt.ylabel('Average Fitness')
 
                 plt.title("Fitness")
 
