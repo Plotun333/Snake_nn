@@ -208,57 +208,65 @@ class NeuralNetwork(object):
             all_percent.append(current_percent / 100)
             current_percent -= one_percent
 
+        # the "best nn" gets to creates 1% replicas of it's self
+        alf = request_num/100
+        if alf < 0:
+            alf = 0
         for _ in range(create):
 
-            while True:
-                index_r = random.randint(0, len(all_nn) - 1)
-                index_r2 = random.randint(0, len(all_nn) - 1)
-                if index_r != index_r2:
-                    r = random.randint(0, 10000) / 10000
-                    r2 = random.randint(0, 10000) / 10000
-                    if all_percent[index_r] > r and all_percent[index_r2] > r2:
-                        break
+            if alf != 0:
+                add.append(all_nn[0])
+                alf -= 1
+            else:
+                while True:
+                    index_r = random.randint(0, len(all_nn) - 1)
+                    index_r2 = random.randint(0, len(all_nn) - 1)
+                    if index_r != index_r2:
+                        r = random.randint(8000, 10000) / 10000
+                        r2 = random.randint(8000, 10000) / 10000
+                        if all_percent[index_r] > r and all_percent[index_r2] > r2:
+                            break
 
-            first_nn = copy.deepcopy(all_nn[index_r])
-            second_nn = copy.deepcopy(all_nn[index_r2])
-            new_nn = NeuralNetwork(first_nn.input_nodes, first_nn.hidden_nodes, first_nn.output_nodes)
+                first_nn = copy.deepcopy(all_nn[index_r])
+                second_nn = copy.deepcopy(all_nn[index_r2])
+                new_nn = NeuralNetwork(first_nn.input_nodes, first_nn.hidden_nodes, first_nn.output_nodes)
 
-            new_nn.hidden_weights = second_nn.hidden_weights
-            new_nn.hidden_biases = second_nn.hidden_biases
+                new_nn.hidden_weights = second_nn.hidden_weights
+                new_nn.hidden_biases = second_nn.hidden_biases
 
-            index_w1 = 0
+                index_w1 = 0
 
-            for matrix in first_nn.hidden_weights:
-                index_w2 = 0
-                for row in matrix.data:
-                    index_w3 = 0
-                    for element in row:
+                for matrix in first_nn.hidden_weights:
+                    index_w2 = 0
+                    for row in matrix.data:
+                        index_w3 = 0
+                        for element in row:
 
-                        choice = random.randint(0, 1)
-                        if choice == 0:
-                            new_nn.hidden_weights[index_w1].data[index_w2][index_w3] = element
+                            choice = random.randint(0, 1)
+                            if choice == 0:
+                                new_nn.hidden_weights[index_w1].data[index_w2][index_w3] = element
 
-                        index_w3 += 1
-                    index_w2 += 1
-                index_w1 += 1
+                            index_w3 += 1
+                        index_w2 += 1
+                    index_w1 += 1
 
-            index_w1 = 0
-            for matrix in first_nn.hidden_biases:
-                index_w2 = 0
-                for row in matrix.data:
-                    index_w3 = 0
-                    for element in row:
+                index_w1 = 0
+                for matrix in first_nn.hidden_biases:
+                    index_w2 = 0
+                    for row in matrix.data:
+                        index_w3 = 0
+                        for element in row:
 
-                        choice = random.randint(0, 1)
+                            choice = random.randint(0, 1)
 
-                        if choice == 0:
-                            new_nn.hidden_biases[index_w1].data[index_w2][index_w3] = element
+                            if choice == 0:
+                                new_nn.hidden_biases[index_w1].data[index_w2][index_w3] = element
 
-                        index_w3 += 1
-                    index_w2 += 1
-                index_w1 += 1
+                            index_w3 += 1
+                        index_w2 += 1
+                    index_w1 += 1
 
-            add.append(new_nn)
+                add.append(new_nn)
 
         for element in add:
             all_nn.append(element)

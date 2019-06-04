@@ -160,7 +160,7 @@ class Game(object):
 
                     if self.all_snake[index].hit():
                         self.game.DEATH = True
-                        # self.all_snake[index].Fitness -= max_turns
+                        self.all_snake[index].Fitness -= max_turns
                         remove_s.append(self.all_snake[index])
                         remove_f.append(self.all_food[index])
                         remove_nn.append(nn)
@@ -171,7 +171,7 @@ class Game(object):
                                                     random.randint(1, 39) * self.snake.speed)
                         self.scores[index] += 1
                         self.game.display.fill((0, 0, 0))
-                        self.all_snake[index].Fitness += max_turns/2
+                        self.all_snake[index].Fitness += max_turns
 
                     index += 1
                 for r in remove_s:
