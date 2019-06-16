@@ -12,4 +12,4 @@
 ## Saving
 * ### program will automaticly save the best snake. To see the best snake press => Esc and select Best AI
 ## How does it look
-![websites bookhunter page](https://imgur.com/a/wmBQcdv)
+![websites bookhunter page](https://imgur.com/M3cRH4o)
