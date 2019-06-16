@@ -20,4 +20,4 @@
 * ### how to optimize a simulation
 * ### how to save a object with [pickle](https://docs.python.org/2/library/pickle.html)
 * ### how to control a population in a genetic algorithm (breed the best and "kill" the worst)
-* ### how to create an architecture of a neural network for given task
+* ### how to create an architecture of a neural network for a given task
