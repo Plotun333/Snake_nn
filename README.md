@@ -7,7 +7,7 @@
 ### this project was created thanks to my [Neural Network Library](https://github.com/atOliverParkerMorgan/Neural_network-lib) 
 
 ## Problems 
-* ### to create a good snake AI you will need to simulate this progarm for about a 72 hours (depending on the speed of your computer)
+* ### to create a good snake AI you will need to simulate this program for about a 72 hours (depending on the speed of your computer)
 ## Saving
 * ### program will automaticly save the best snake. To see the best snake press => Esc and select Best AI
 ## How does it look
