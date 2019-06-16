@@ -9,7 +9,7 @@
 ## Problems 
 * ### to create a good snake AI you will need to simulate this program for about 72 hours (depending on the speed of your computer)
 ## Saving
-* ### program will automaticly save the best snake. To see the best snake press => Esc and select Best AI
+* ### this program will automaticly save the best snake. To see the best snake press => Esc and select Best AI
 ## How does it look
 ![snake image](https://i.imgur.com/M3cRH4o.png)
 ![snake image](https://i.imgur.com/gEv8EO8.png)
