@@ -5,7 +5,7 @@
 ### and neural netowks
 
 ## Library
-### this project was created thanks to my [Neural Ntework Library](https://github.com/atOliverParkerMorgan/Neural_network-lib) 
+### this project was created thanks to my [Neural Network Library](https://github.com/atOliverParkerMorgan/Neural_network-lib) 
 
 ## Problems 
 * ### to create a good snake AI you will need to simulate this progarm for about a four days (depending on the speed of your compute)
@@ -15,3 +15,10 @@
 ![snake image](https://i.imgur.com/M3cRH4o.png)
 ![snake image](https://i.imgur.com/gEv8EO8.png)
 ![snake image](https://i.imgur.com/OF0asGL.png)
+
+## What did i learn 
+* ### how to mutate and crossover NeuralNetork information (weights, biases)
+* ### how to optimize a simulation
+* ### how to save a object with [pickle](https://docs.python.org/2/library/pickle.html)
+* ### how to control a population in a genetic algorithm (breed the best and "kill" the worst)
+* ### how to create an architecture of a neural network for given task
