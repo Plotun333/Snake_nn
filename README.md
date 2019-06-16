@@ -1,7 +1,7 @@
 # Snake_nn
 
 ##  About
-### this program simulates a game with 2000 snakes and slowly creates a snake AI thanks to genetic algorithms and neural netowks
+### this program simulates a game with 2000 snakes and slowly creates a snake AI thanks to genetic algorithms and neural networks
 
 ## Library
 ### this project was created thanks to my [Neural Network Library](https://github.com/atOliverParkerMorgan/Neural_network-lib) 
