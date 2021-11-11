@@ -6,6 +6,16 @@
 ## Library
 #### this project was created thanks to my [Neural Network Library](https://github.com/atOliverParkerMorgan/Neural_network-lib) 
 
+## Screenshots
+
+<img src="https://files.fm/thumb_show.php?i=m9tj2zqpc">
+<br>
+<img src="https://files.fm/thumb_show.php?i=q7aedxfez">
+<br>
+<img src="https://files.fm/thumb_show.php?i=pavmpqq56">
+<br>
+
+
 ## Problems 
 * #### to create a good snake AI you will need to simulate this program for about 72 hours (depending on the speed of your computer)
 ## Saving
