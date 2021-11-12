@@ -1,29 +1,36 @@
 # import libraries
 import pygame
-import pygameMenu
-from pygameMenu.locals import *
+
 import sys
 import random
 from lib_nn.nn import NeuralNetwork
 
 # import Files
-from SNAKE.GameInfo import GameInfo
-from SNAKE.snake import Snake
-from SNAKE.food import Food
+from GameInfo import GameInfo
+from Snake import Snake
+from Food import Food
+from Menu import Menu
 
 
-class Game(object):
+
+class Game:
     """
     The main game class
     """
 
     def __init__(self, population=None):
-        self.game = GameInfo()
+        self.PLAY_MODE = None
+        self.DEATH = True
+        self.SCREEN_WIDTH = 800
+        self.SCREEN_HEIGHT = 400
+        self.Score = 0
+        self.display = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.clock = pygame.time.Clock()
 
         if population is None:  # normal game
 
             self.snake = Snake()
-            self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
+            self.food = Food(random.randint(1, 39) * self.snake.SPEED, random.randint(1, 39) * self.snake.SPEED)
 
         else:
             self.all_food_pos = []
@@ -37,12 +44,13 @@ class Game(object):
                 self.all_snake.append(Snake())
                 self.scores.append(0)  # append a score
                 self.all_food.append(
-                    Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed))
+                    Food(random.randint(1, 39) * self.snake.SPEED, random.randint(1, 39) * self.snake.SPEED))
 
         self.population = population
+        self.menu = Menu(self)
 
     def game_loop(self, show=True, max_turns=300, delay=50, gen=None):
-        global Play_normal
+
         Play_normal = "None"
         pygame.init()
         white = (255, 255, 255)
@@ -54,41 +62,7 @@ class Game(object):
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
 
-        def main_menu_background():
-            """
-            Background color of the main menu, on this function user can plot
-            images, play sounds, etc.
-            """
-            # Nothing
-
-        def play():
-            global Play_normal
-            Play_normal = "Player"
-
-        def train_ai():
-            global Play_normal
-            Play_normal = "AI"
-
-        def best_ai():
-            global Play_normal
-            Play_normal = "Show_best"
-
-        menu = pygameMenu.Menu(self.game.display,
-                               bgfun=main_menu_background,
-                               enabled=False,
-                               font=pygameMenu.fonts.FONT_NEVIS,
-                               menu_alpha=90,
-                               onclose=PYGAME_MENU_CLOSE,
-                               title='Main Menu',
-                               title_offsety=5,
-                               window_height=int(self.game.screen_height),
-                               window_width=int(self.game.screen_width)
-                               )
-
-        menu.add_option("New Game", play)
-        menu.add_option("Train AI", train_ai)
-        menu.add_option("Best AI", best_ai)
-        menu.add_option('Exit', PYGAME_MENU_EXIT)
+        menu = Menu(self)
 
         # -----------------------------------------------------------------------------
 
@@ -111,9 +85,9 @@ class Game(object):
         while True:
             events = pygame.event.get()
 
-            self.game.display.fill(white)
+            self.display.fill(white)
             pygame.time.delay(delay)
-            self.game.clock.tick(FPS)
+            self.clock.tick(FPS)
 
             if AI:
                 FPS = 120
@@ -129,19 +103,19 @@ class Game(object):
                     for _ in keys:
 
                         if keys[pygame.K_ESCAPE]:
-                            menu.enable()
+                            menu.enable(self)
 
                 remove_s = []
                 remove_f = []
                 remove_nn = []
                 index = 0
 
-                self.game.display.fill((0, 0, 0))
+                self.display.fill((0, 0, 0))
                 for nn in self.population:
 
-                    self.all_food[index].draw()
-                    self.all_snake[index].ai(nn, self.all_food[index], menu)
-                    self.all_snake[index].draw()
+                    self.all_food[index].draw(self)
+                    self.all_snake[index].ai(nn, self.all_food[index], menu, self)
+                    self.all_snake[index].draw(self)
 
                     self.all_snake[index].Fitness += 2
 
@@ -159,18 +133,17 @@ class Game(object):
                         break
 
                     if self.all_snake[index].hit():
-                        self.game.DEATH = True
                         self.all_snake[index].Fitness -= max_turns
                         remove_s.append(self.all_snake[index])
                         remove_f.append(self.all_food[index])
                         remove_nn.append(nn)
 
                     if self.all_snake[index].eat(self.all_food[index].x, self.all_food[index].y):
-                        self.game.Score += 1
-                        self.all_food[index] = Food(random.randint(1, 39) * self.snake.speed,
-                                                    random.randint(1, 39) * self.snake.speed)
+                        self.Score += 1
+                        self.all_food[index] = Food(random.randint(1, 39) * self.snake.SPEED,
+                                                    random.randint(1, 39) * self.snake.SPEED)
                         self.scores[index] += 1
-                        self.game.display.fill((0, 0, 0))
+                        self.display.fill((0, 0, 0))
                         self.all_snake[index].Fitness += max_turns
 
                     index += 1
@@ -183,16 +156,15 @@ class Game(object):
                 for r in remove_nn:
                     next_population.append(r)
                     self.population.remove(r)
-                menu.mainloop(events)
 
                 text_surface3 = my_font.render('Loading: ' + str(turns) + ' / ' + str(max_turns), False, (255, 0, 0))
                 text_surface2 = my_font.render('Generation: ' + str(gen), False, (255, 0, 0))
                 text_surface = my_font.render('Best global score: ' + str(max(self.scores)), False, (255, 0, 0))
-                self.game.display.blit(text_surface3, (500, 200))
-                self.game.display.blit(text_surface2, (500, 175))
-                self.game.display.blit(text_surface, (500, 150))
-                pygame.draw.line(self.game.display, (255, 255, 255), (self.game.screen_height, 0),
-                                 (self.game.screen_height, self.game.screen_height))
+                self.display.blit(text_surface3, (500, 200))
+                self.display.blit(text_surface2, (500, 175))
+                self.display.blit(text_surface, (500, 150))
+                pygame.draw.line(self.display, (255, 255, 255), (self.SCREEN_HEIGHT, 0),
+                                 (self.SCREEN_HEIGHT, self.SCREEN_HEIGHT))
                 pygame.display.flip()
                 turns += 1
 
@@ -239,86 +211,41 @@ class Game(object):
                     return current_population, All_fitness_sorted
 
             else:
-                self.game.display.fill((0, 0, 0))
+                self.display.fill((0, 0, 0))
 
-                text_surface = my_font.render('Score: ' + str(self.game.Score), False, (255, 0, 0))
-                self.game.display.blit(text_surface, (10, 10))
-                self.food.draw()
+                text_surface = my_font.render('Score: ' + str(self.Score), False, (255, 0, 0))
+                self.display.blit(text_surface, (10, 10))
+                self.food.draw(self)
                 self.snake.move(menu)
-                self.snake.draw()
+                self.snake.draw(self)
 
-                pygame.draw.line(self.game.display, (255, 255, 255), (self.game.screen_height, 0),
-                                 (self.game.screen_height, self.game.screen_height))
+                pygame.draw.line(self.display, (255, 255, 255), (self.SCREEN_HEIGHT, 0),
+                                 (self.SCREEN_HEIGHT, self.SCREEN_HEIGHT))
 
                 if self.snake.eat(self.food.x, self.food.y):
-                    self.game.Score += 1
-                    self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
-                    self.game.display.fill((0, 0, 0))
+                    self.Score += 1
+                    self.food = Food(random.randint(1, 39) * self.snake.SPEED, random.randint(1, 39) * self.snake.SPEED)
+                    self.display.fill((0, 0, 0))
 
                 if self.snake.hit():
                     return None
 
-                menu.mainloop(events)
                 pygame.display.flip()
 
             if Play_normal != "None":
                 return Play_normal
 
     def simulate(self, nn, fitness="unknown"):
-        global Play_normal
-        Play_normal = "None"
+        global Play_mode
+        Play_mode = "None"
         pygame.init()
         white = (255, 255, 255)
         self.snake = Snake()
-        self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
+        self.food = Food(random.randint(1, 39) * self.snake.SPEED, random.randint(1, 39) * self.snake.SPEED)
         simulate_nn = nn
 
         # -----------------------------------------------------------------------------
         # Main menu, pauses execution of the application
-
-        def main_menu_background():
-            """
-            Background color of the main menu, on this function user can plot
-            images, play sounds, etc.
-            """
-            # Nothing
-
-        def play():
-            global Play_normal
-            Play_normal = "Player"
-
-        def train_ai():
-            global Play_normal
-            Play_normal = "AI"
-
-        def best_ai():
-            global Play_normal
-            Play_normal = "Show_best"
-
-        menu = pygameMenu.Menu(self.game.display,
-                               bgfun=main_menu_background,
-                               enabled=False,
-                               font=pygameMenu.fonts.FONT_NEVIS,
-                               menu_alpha=90,
-                               onclose=PYGAME_MENU_CLOSE,
-                               title='Main Menu',
-                               title_offsety=5,
-                               window_height=int(self.game.screen_height),
-                               window_width=int(self.game.screen_width)
-                               )
-
-        menu.add_option("New Game", play)
-        menu.add_option("Train AI", train_ai)
-        menu.add_option("Best AI", best_ai)
-        menu.add_option('Exit', PYGAME_MENU_EXIT)
-
-        # -----------------------------------------------------------------------------
-
-        pygame.display.set_caption("snake")
-
-        pygame.font.init()  # you have to call this at the start,
-        # if you want to use this module.
-        my_font = pygame.font.SysFont('Comic Sans MS', 15)
 
         # frame rate + delay after every frame
         fps = 36
@@ -334,40 +261,40 @@ class Game(object):
 
                 for _ in keys:
                     if keys[pygame.K_ESCAPE]:
-                        menu.enable()
+                        self.menu.enable(self)
 
             events = pygame.event.get()
-            self.game.display.fill(white)
+            self.display.fill(white)
             all_fit = 0
             if not fitness == "unknown":
                 for fit in fitness:
                     all_fit += fit
                 average = all_fit / len(fitness)
-                text_surface = my_font.render('Best Fitness: ' + str(fitness[0]),
-                                              False, (100, 200, 24))
-                text_surface2 = my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
-                self.game.display.blit(text_surface, (500, 200))
-                self.game.display.blit(text_surface2, (500, 175))
+                text_surface = self.menu.my_font.render('Best Fitness: ' + str(fitness[0]),
+                                                        False, (100, 200, 24))
+                text_surface2 = self.menu.my_font.render("Average Fitness: " + str(average), False, (100, 200, 24))
+                self.display.blit(text_surface, (500, 200))
+                self.display.blit(text_surface2, (500, 175))
 
             pygame.time.delay(delay)
-            self.game.clock.tick(fps)
-            self.game.display.fill((0, 0, 0))
-            self.food.draw()
-            self.snake.ai(simulate_nn, self.food, menu)
-            self.snake.draw()
+            self.clock.tick(fps)
+            self.display.fill((0, 0, 0))
+            self.food.draw(self)
+            self.snake.ai(simulate_nn, self.food, self.menu, self)
+            self.snake.draw(self)
 
             if self.snake.hit():
                 return None
 
             if self.snake.eat(self.food.x, self.food.y):
-                self.game.Score += 1
-                self.food = Food(random.randint(1, 39) * self.snake.speed, random.randint(1, 39) * self.snake.speed)
+                self.Score += 1
+                self.food = Food(random.randint(1, 39) * self.snake.SPEED, random.randint(1, 39) * self.snake.SPEED)
                 self.food.index += 1
-                self.game.display.fill((0, 0, 0))
+                self.display.fill((0, 0, 0))
 
-            menu.mainloop(events)
+            # self.menu.mainloop(events)
 
             pygame.display.flip()
 
-            if Play_normal != "None":
-                return Play_normal
+            if Play_mode != "None":
+                return Play_mode

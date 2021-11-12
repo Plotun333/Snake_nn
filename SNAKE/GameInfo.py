@@ -1,7 +1,7 @@
 import pygame
 
 
-class GameInfo(object):
+class GameInfo:
     """
     Game info is a class with all of the global information about the game
     like the display the Score...

@@ -4,7 +4,7 @@ import pygame
 from SNAKE.GameInfo import GameInfo
 
 
-class Food(GameInfo):
+class Food:
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -19,5 +19,5 @@ class Food(GameInfo):
         # helps keep track of the food in a list
         self.index = 1
 
-    def draw(self):
-        pygame.draw.rect(self.display, self.color, (self.x, self.y, self.width, self.height))
+    def draw(self, game):
+        pygame.draw.rect(game.display, self.color, (self.x, self.y, self.width, self.height))

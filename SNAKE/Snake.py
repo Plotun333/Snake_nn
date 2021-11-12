@@ -8,7 +8,7 @@ import sys
 from SNAKE.GameInfo import GameInfo
 
 
-class Snake(GameInfo):
+class Snake:
 
     def __init__(self, x=200, y=200):  # default position is in the middle of the "snake screen"
         super().__init__()
@@ -16,12 +16,12 @@ class Snake(GameInfo):
         self.x = int(x)
         self.y = int(y)
 
-        self.body_width = 10
-        self.body_height = 10
+        self.BODY_WIDTH = 10
+        self.BODY_HEIGHT = 10
         # the snake is green
-        self.color = (0, 255, 0)
+        self.COLOR = (0, 255, 0)
 
-        self.speed = 10
+        self.SPEED = 10
         # the head of the snake
         self.body = [[self.x, self.y]]
         # the snake starts the game moving left
@@ -32,7 +32,7 @@ class Snake(GameInfo):
         self.Fitness = 0
         self.food_dist = 0
 
-    def draw(self):
+    def draw(self, game):
         # moving the body + drawing it
         index = 0
         moveto = []
@@ -41,22 +41,22 @@ class Snake(GameInfo):
             if index == 0:  # move the head
                 moveto.append([self.body[0][0], self.body[0][1]])
                 if self.dir == 'left':
-                    self.body[0][0] -= self.speed
+                    self.body[0][0] -= self.SPEED
 
                 elif self.dir == 'right':
-                    self.body[0][0] += self.speed
+                    self.body[0][0] += self.SPEED
 
                 elif self.dir == 'up':
-                    self.body[0][1] -= self.speed
+                    self.body[0][1] -= self.SPEED
 
                 elif self.dir == 'down':
-                    self.body[0][1] += self.speed
+                    self.body[0][1] += self.SPEED
             else:  # move the rest of the body to the position were the previous body was
                 moveto.append([element[0], element[1]])
                 element = moveto[len(moveto) - 2]
                 self.body[index] = element
 
-            pygame.draw.rect(self.display, self.color, (element[0], element[1], self.body_width, self.body_height))
+            pygame.draw.rect(game.display, self.COLOR, (element[0], element[1], self.BODY_WIDTH, self.BODY_HEIGHT))
 
             index += 1
 
@@ -88,7 +88,7 @@ class Snake(GameInfo):
                 elif keys[pygame.K_ESCAPE]:
                     menu.enable()
 
-    def ai(self, nn, food, menu):  # the ai move function
+    def ai(self, nn, food, menu, game):  # the ai move function
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -104,11 +104,11 @@ class Snake(GameInfo):
         input_nn = [
             # eight wall inputs
             self.wall_dist_up(),
-            self.wall_dist_up_right(),
-            self.wall_dist_right(),
-            self.wall_dist_right_down(),
-            self.wall_dist_down(),
-            self.wall_dist_down_left(),
+            self.wall_dist_up_right(game),
+            self.wall_dist_right(game),
+            self.wall_dist_right_down(game),
+            self.wall_dist_down(game),
+            self.wall_dist_down_left(game),
             self.wall_dist_left(),
             self.wall_dist_left_up(),
 
@@ -168,16 +168,16 @@ class Snake(GameInfo):
 
             if self.dir == 'left':
                 x, y = self.body[len(self.body) - 1]
-                self.body.append([x + self.speed, y])
+                self.body.append([x + self.SPEED, y])
             elif self.dir == 'right':
                 x, y = self.body[len(self.body) - 1]
-                self.body.append([x - self.speed, y])
+                self.body.append([x - self.SPEED, y])
             elif self.dir == 'up':
                 x, y = self.body[len(self.body) - 1]
-                self.body.append([x, y + self.speed])
+                self.body.append([x, y + self.SPEED])
             elif self.dir == 'down':
                 x, y = self.body[len(self.body) - 1]
-                self.body.append([x, y - self.speed])
+                self.body.append([x, y - self.SPEED])
 
             return True
 
@@ -217,23 +217,23 @@ class Snake(GameInfo):
     def wall_dist_left(self):
         return 1 - ((self.body[0][0] + 10) / 410)
 
-    def wall_dist_right(self):
-        return 1 - ((self.screen_height - self.body[0][0]) / 400)
+    def wall_dist_right(self, game):
+        return 1 - ((game.SCREEN_WIDTH - self.body[0][0]) / 400)
 
     def wall_dist_up(self):
         return 1 - ((self.body[0][1] + 10) / 410)
 
-    def wall_dist_down(self):
-        return 1 - ((self.screen_height - self.body[0][1]) / 400)
+    def wall_dist_down(self, game):
+        return 1 - ((game.SCREEN_HEIGHT - self.body[0][1]) / 400)
 
-    def wall_dist_up_right(self):
-        return 1 - ((1 / 2) ** (self.wall_dist_up() ** 2 + self.wall_dist_right() ** 2))
+    def wall_dist_up_right(self, game):
+        return 1 - ((1 / 2) ** (self.wall_dist_up() ** 2 + self.wall_dist_right(game) ** 2))
 
-    def wall_dist_right_down(self):
-        return 1 - ((1 / 2) ** (self.wall_dist_right() ** 2 + self.wall_dist_down() ** 2))
+    def wall_dist_right_down(self, game):
+        return 1 - ((1 / 2) ** (self.wall_dist_right(game) ** 2 + self.wall_dist_down(game) ** 2))
 
-    def wall_dist_down_left(self):
-        return 1 - ((1 / 2) ** (self.wall_dist_down() ** 2 + self.wall_dist_left() ** 2))
+    def wall_dist_down_left(self, game):
+        return 1 - ((1 / 2) ** (self.wall_dist_down(game) ** 2 + self.wall_dist_left() ** 2))
 
     def wall_dist_left_up(self):
         return 1 - ((1 / 2) ** (self.wall_dist_left() ** 2 + self.wall_dist_up() ** 2))
