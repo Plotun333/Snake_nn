@@ -1,11 +1,7 @@
-
 # import libraries
 import math
 import pygame
 import sys
-
-# import files
-from SNAKE.GameInfo import GameInfo
 
 
 class Snake:

@@ -1,7 +1,7 @@
 # import libraries
 import pygame
 # import files
-from SNAKE.GameInfo import GameInfo
+
 
 
 class Food:
